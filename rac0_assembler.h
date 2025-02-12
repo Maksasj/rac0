@@ -2,6 +2,8 @@
 #define RAC0_ASSEMBLER_H
 
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 
 // Lexer
 typedef enum {
@@ -13,6 +15,7 @@ typedef enum {
     RAC0A_TOKEN_COLON = 5,
 
     RAC0A_TOKEN_LABEL = 6,
+    RAC0A_TOKEN_NUMBER = 7,
 
     RAC0A_TOKEN_EOF = 0,     
     RAC0A_TOKEN_ERROR = -1
@@ -37,6 +40,20 @@ typedef struct {
     rac0a_result_code_t code;
 } rac0a_lex_result_t;
 
+char* rac0a_string_copy(const char* input) {
+    unsigned long long len = strlen(input) + 1;
+    char* out =  malloc(sizeof(char) * len);
+    memcpy(out, input, len);
+    return out;
+}
+
+char* rac0a_string_copy_len(const char* input, unsigned long long size) {
+    unsigned long long len = size + 1;
+    char* out =  calloc(len, sizeof(char));
+    memcpy(out, input, len);
+    return out;
+}
+
 // lexer
 void rac0a_free_token(rac0a_token_t token) {
     if(token.lexeme != NULL)
@@ -48,9 +65,8 @@ rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer);
 
 // lexer
 void rac0a_skip_whitespace(rac0a_lexer_t* lexer) {
-    while (isspace(lexer->input[lexer->pointer])) {
+    while (isspace(lexer->input[lexer->pointer]))
         lexer->pointer++;
-    }
 }
 
 rac0a_lex_result_t rac0a_lex_at(rac0a_token_t* token, rac0a_lexer_t* lexer) {
@@ -58,7 +74,7 @@ rac0a_lex_result_t rac0a_lex_at(rac0a_token_t* token, rac0a_lexer_t* lexer) {
         return (rac0a_lex_result_t) { RAC0A_ERROR };
 
     token->type = RAC0A_TOKEN_AT;
-    token->lexeme = NULL;
+    token->lexeme = rac0a_string_copy("@");
 
     lexer->pointer++;
 
@@ -70,7 +86,7 @@ rac0a_lex_result_t rac0a_lex_dollar(rac0a_token_t* token, rac0a_lexer_t* lexer) 
         return (rac0a_lex_result_t) { RAC0A_ERROR };
 
     token->type = RAC0A_TOKEN_DOLLAR;
-    token->lexeme = NULL;
+    token->lexeme = rac0a_string_copy("$");
 
     lexer->pointer++;
 
@@ -82,7 +98,7 @@ rac0a_lex_result_t rac0a_lex_lparen(rac0a_token_t* token, rac0a_lexer_t* lexer) 
         return (rac0a_lex_result_t) { RAC0A_ERROR };
 
     token->type = RAC0A_TOKEN_L_PAREN;
-    token->lexeme = NULL;
+    token->lexeme = rac0a_string_copy("(");
 
     lexer->pointer++;
 
@@ -94,7 +110,7 @@ rac0a_lex_result_t rac0a_lex_rparen(rac0a_token_t* token, rac0a_lexer_t* lexer) 
         return (rac0a_lex_result_t) { RAC0A_ERROR };
 
     token->type = RAC0A_TOKEN_R_PAREN;
-    token->lexeme = NULL;
+    token->lexeme = rac0a_string_copy(")");
 
     lexer->pointer++;
 
@@ -106,7 +122,7 @@ rac0a_lex_result_t rac0a_lex_colon(rac0a_token_t* token, rac0a_lexer_t* lexer) {
         return (rac0a_lex_result_t) { RAC0A_ERROR };
 
     token->type = RAC0A_TOKEN_COLON;
-    token->lexeme = NULL;
+    token->lexeme = rac0a_string_copy(":");
 
     lexer->pointer++;
 
@@ -123,13 +139,75 @@ rac0a_lex_result_t rac0a_lex_label(rac0a_token_t* token, rac0a_lexer_t* lexer) {
         ++lexer->pointer;
     }
 
-    if(start == lexer->pointer)
+    if(start == lexer->pointer) {
+        lexer->pointer = start;
         return (rac0a_lex_result_t) { RAC0A_ERROR };
+    }
 
     token->type = RAC0A_TOKEN_LABEL;
-    token->lexeme = NULL;
+    token->lexeme = rac0a_string_copy_len(&lexer->input[start], (lexer->pointer - 1) - start);
 
     return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
+rac0a_lex_result_t rac0a_lex_hex_number(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(strncmp(lexer->input + lexer->pointer, "0x", 2) != 0)
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    int start = lexer->pointer;
+    lexer->pointer += 2;
+
+    while(1) {
+        if(!isxdigit(lexer->input[lexer->pointer]))
+            break;
+
+        ++lexer->pointer;
+    }
+
+    if((start + 2) == lexer->pointer) {
+        lexer->pointer = start;
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+    }
+
+    token->type = RAC0A_TOKEN_NUMBER;
+    token->lexeme = rac0a_string_copy_len(&lexer->input[start], (lexer->pointer - 1) - start);
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
+rac0a_lex_result_t rac0a_lex_binary_number(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(strncmp(lexer->input + lexer->pointer, "0b", 2) != 0)
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    int start = lexer->pointer;
+    lexer->pointer += 2;
+
+    while(1) {
+        if(lexer->input[lexer->pointer] != '0' && lexer->input[lexer->pointer] != '1')
+            break;
+
+        ++lexer->pointer;
+    }
+
+    if((start + 2) == lexer->pointer) {
+        lexer->pointer = start;
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+    }
+
+    token->type = RAC0A_TOKEN_NUMBER;
+    token->lexeme = rac0a_string_copy_len(&lexer->input[start], (lexer->pointer - 1) - start);
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
+rac0a_lex_result_t rac0a_lex_number(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(rac0a_lex_hex_number(token, lexer).code == RAC0A_OK)
+        return (rac0a_lex_result_t) { RAC0A_OK };
+
+    if(rac0a_lex_binary_number(token, lexer).code == RAC0A_OK)
+        return (rac0a_lex_result_t) { RAC0A_OK };
+
+    return (rac0a_lex_result_t) { RAC0A_ERROR };
 }
 
 rac0a_lex_result_t rac0a_lex_eof(rac0a_token_t* token, rac0a_lexer_t* lexer) {
@@ -167,6 +245,9 @@ rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer) {
         return token;
 
     if(rac0a_lex_label(&token, lexer).code == RAC0A_OK)
+        return token;
+    
+    if(rac0a_lex_number(&token, lexer).code == RAC0A_OK)
         return token;
 
     if(rac0a_lex_eof(&token, lexer).code == RAC0A_OK)

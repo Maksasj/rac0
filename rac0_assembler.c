@@ -19,28 +19,39 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // read file in buffer
-    char* buffer = 0;
-    long length;
+    char *source = NULL;
 
-    fseek (stream, 0, SEEK_END);
-    length = ftell(stream);
-    fseek (stream, 0, SEEK_SET);
-    buffer = calloc(length, 0);
+    /* Go to the end of the file. */
+    if (fseek(stream, 0L, SEEK_END) == 0) {
+        long buf_size = ftell(stream);
 
-    if (buffer == NULL) {
-        PLUM_LOG(PLUM_ERROR, "Failed to allocate memory buffer");
-        return 1;
+        if (buf_size == -1) { 
+            PLUM_LOG(PLUM_ERROR, "Failed ftell for '%s'", argv[1]);
+            return 1;
+        }
+
+        source = malloc(sizeof(char) * (buf_size + 1));
+
+        if (fseek(stream, 0L, SEEK_SET) != 0)  { 
+            PLUM_LOG(PLUM_ERROR, "Failed fseek for '%s'", argv[1]);
+            return 1;
+        }
+
+        size_t new_len = fread(source, sizeof(char), buf_size, stream);
+
+        if (ferror( stream ) != 0 ) {
+            fputs("Error reading file", stderr);
+            PLUM_LOG(PLUM_ERROR, "Error reading file '%s'", argv[1]);
+            return 1;
+        }
+
+        source[new_len++] = '\0'; /* Just to be safe. */
     }
 
-    fread(buffer, 1, length, stream);
-
-    buffer[length] = '\0';
-
-    PLUM_LOG(PLUM_TRACE, "Bufffer '%s'", buffer);
+    fclose(stream);
 
     rac0a_lexer_t lexer = (rac0a_lexer_t) {
-        .input = buffer,
+        .input = source,
         .pointer = 0
     };
 

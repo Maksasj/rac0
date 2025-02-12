@@ -1,3 +1,9 @@
-    $data:
-    push
-pop
+$data:
+
+$code:
+    $loop:
+
+    push 0xFFFF
+    pop
+
+    jmpl $loop:

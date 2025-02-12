@@ -1,12 +1,12 @@
 CC = gcc
-SOURCES = main.c rac0_assembler.c
+SOURCES = rac0.c rac0_assembler.c
 EXES = rac0 rac0_assembler
 
 OBJS = $(SOURCES:.c=.o)
 
 all: $(EXES)
 
-rac0: main.o
+rac0: rac0.o
 	$(CC) $^ -o $@
 
 rac0_assembler: rac0_assembler.o
