@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// #define RAC0_LOG_CPU_INSTRUCTION
 #include "rac0.h"
 
 void debug_console_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {

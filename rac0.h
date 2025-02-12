@@ -182,7 +182,10 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_SWAP_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SWAP is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top);
+        rac0_stack_push(&cpu->stack, next);
     } else if(inst.opcode == RAC0_ADD_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
@@ -239,7 +242,9 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         cpu->device = inst.value;
         goto inc;
     } else if(inst.opcode == RAC0_SETDT_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SETDT is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        cpu->device = top;
+        goto inc;
     } else if(inst.opcode == RAC0_POOLDA_OPCODE) {
         PLUM_LOG(PLUM_ERROR, "Opcode POOLDA is not implemented");
     } else if(inst.opcode == RAC0_POOLDT_OPCODE) {
@@ -251,6 +256,10 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         goto inc;
     } else if(inst.opcode == RAC0_PUSHDT_OPCODE) {
         PLUM_LOG(PLUM_ERROR, "Opcode PUSHDT is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_device_t device = devices[cpu->device];
+        (*device.push)(device.device_data, top, next);
     } else if(inst.opcode == RAC0_WAIT_OPCODE) {
         goto inc; // do nothing
     } else {
@@ -263,7 +272,9 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
 
     cont:
 
+    #ifdef RAC0_LOG_CPU_INSTRUCTION
     PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, OPCODE_STRING[inst.opcode]);
+    #endif
 }
 
 #endif
