@@ -1,18 +1,22 @@
-CC=gcc
-SOURCE=main.c
-OBJ=$(SOURCE:.c=.o)
-EXE=rac0
+CC = gcc
+SOURCES = main.c rac0_assembler.c
+EXES = rac0 rac0_assembler
 
-all: $(EXE) clean execute
+OBJS = $(SOURCES:.c=.o)
 
-$(EXE): $(OBJ)
-	$(CC) $(OBJ) -o $@
+all: $(EXES)
 
-.o: .c
+rac0: main.o
+	$(CC) $^ -o $@
+
+rac0_assembler: rac0_assembler.o
+	$(CC) $^ -o $@
+
+%.o: %.c
 	$(CC) -c $< -o $@
 
 clean:
-	rm -rf $(OBJ)
+	rm -rf $(OBJS) $(EXES)
 
-execute:
-	./$(EXE)
+execute: all
+	@for exe in $(EXES); do ./$$exe; done

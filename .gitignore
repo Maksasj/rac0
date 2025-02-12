@@ -1,2 +1,4 @@
 rac0
 .vscode
+rac0_assembler
+*.o
