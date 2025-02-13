@@ -1,9 +1,7 @@
+@defmacro
+
 $data:
 
 $code:
-    $loop:
-
-    push 0xFFFF
-    pop
-
-    jmpl $loop:
+    pusha 0x1
+    halt

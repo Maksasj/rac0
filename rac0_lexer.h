@@ -1,5 +1,5 @@
-#ifndef RAC0_ASSEMBLER_H
-#define RAC0_ASSEMBLER_H
+#ifndef RAC0_LEXER_H
+#define RAC0_LEXER_H
 
 #include <ctype.h>
 #include <string.h>
@@ -16,6 +16,9 @@ typedef enum {
 
     RAC0A_TOKEN_LABEL = 6,
     RAC0A_TOKEN_NUMBER = 7,
+
+    RAC0A_TOKEN_L_BRACKET = 8,
+    RAC0A_TOKEN_R_BRACKET = 9,
 
     RAC0A_TOKEN_EOF = 0,     
     RAC0A_TOKEN_ERROR = -1
@@ -222,6 +225,30 @@ rac0a_lex_result_t rac0a_lex_eof(rac0a_token_t* token, rac0a_lexer_t* lexer) {
     return (rac0a_lex_result_t) { RAC0A_OK };
 }
 
+rac0a_lex_result_t rac0a_lex_lbracket(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(lexer->input[lexer->pointer] != '{')
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    token->type = RAC0A_TOKEN_L_BRACKET;
+    token->lexeme = rac0a_string_copy("{");;
+
+    lexer->pointer++;
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
+rac0a_lex_result_t rac0a_lex_rbracket(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(lexer->input[lexer->pointer] != '}')
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    token->type = RAC0A_TOKEN_R_BRACKET;
+    token->lexeme = rac0a_string_copy("}");;
+
+    lexer->pointer++;
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
 rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer) {
     rac0a_skip_whitespace(lexer);
 
@@ -248,6 +275,12 @@ rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer) {
         return token;
     
     if(rac0a_lex_number(&token, lexer).code == RAC0A_OK)
+        return token;
+
+    if(rac0a_lex_lbracket(&token, lexer).code == RAC0A_OK)
+        return token;
+
+    if(rac0a_lex_rbracket(&token, lexer).code == RAC0A_OK)
         return token;
 
     if(rac0a_lex_eof(&token, lexer).code == RAC0A_OK)

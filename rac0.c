@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// #define RAC0_LOG_CPU_INSTRUCTION
+#define RAC0_LOG_CPU_INSTRUCTION
 #include "rac0.h"
 
 void debug_console_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
@@ -26,7 +26,7 @@ int main() {
         (rac0_inst_t) { .opcode = RAC0_PUSHA_OPCODE, .value = 0x0000000000000001 },
         (rac0_inst_t) { .opcode = RAC0_ADDAT_OPCODE, .value = 1 },
         (rac0_inst_t) { .opcode = RAC0_PUSHDA_OPCODE, .value = 0 },
-        (rac0_inst_t) { .opcode = RAC0_JMPLUA_OPCODE, .value = 2 * sizeof(rac0_inst_t) },
+        (rac0_inst_t) { .opcode = RAC0_JMPGA_OPCODE, .value = 1 * sizeof(rac0_inst_t) },
         (rac0_inst_t) { .opcode = RAC0_HALT_OPCODE },
     };
 

@@ -4,7 +4,7 @@
 #define PLUM_IMPLEMENTATION
 #include "plum.h"
 
-#include "rac0_assembler.h"
+#include "rac0_parser.h"
 
 int main(int argc, char *argv[]) {
     if(argc < 2) {
@@ -50,26 +50,9 @@ int main(int argc, char *argv[]) {
 
     fclose(stream);
 
-    rac0a_lexer_t lexer = (rac0a_lexer_t) {
-        .input = source,
-        .pointer = 0
-    };
+    rac0a_program_t program;
 
-    while(1) {
-        rac0a_token_t token = rac0a_next_token(&lexer);  
-
-        if(token.type == RAC0A_TOKEN_EOF)
-            break;
-
-        if(token.type == RAC0A_TOKEN_ERROR) {
-            PLUM_LOG(PLUM_ERROR, "Unknown token at '%d'", lexer.pointer);
-            break;
-        }
-
-        PLUM_LOG(PLUM_TRACE, "Token '%d': '%s'", token.type, token.lexeme);
-
-        rac0a_free_token(token);
-    }
+    rac0a_parse_program(&program, source);
 
     return 0;
 }
