@@ -1,3 +1,7 @@
 @module sys {
-    some db "Very cool thing"
+    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
+    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
+    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
+    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
+    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
 }

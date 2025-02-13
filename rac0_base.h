@@ -52,7 +52,7 @@ typedef rac0_u16_t rac0_opcode_t;
 
 #define RAC0_WAIT_OPCODE        ((rac0_opcode_t) 22)
 
-static char* OPCODE_STRING[] = {
+static char* RAC0_OPCODE_STRING[] = {
     "HALT",
 
     "PUSHA",

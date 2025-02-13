@@ -1,7 +1,7 @@
 @module main {
     @include "rac0.sys.asm"
-
-    @consteval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
+    
+    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
 
     $data:
         pusha 0x1
@@ -12,8 +12,9 @@
         somesome dw 0xFFFF
     
     $code:
+        $loop:
         pusha 0x1
-        pusha $pog
+        addat 0x1
+        jmpga $loop
         halt 
-        somesome dw 0xFFFF
 }

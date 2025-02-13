@@ -22,6 +22,8 @@ int main(int argc, char *argv[]) {
     rac0a_parse_program(&program, source);
     PLUM_LOG(PLUM_INFO, "Parsed program");
 
+    PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&program.hl_statements));
+
     rac0a_assemble_program(&program);
 
     return 0;

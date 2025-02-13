@@ -182,7 +182,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
     cont:
 
     #ifdef RAC0_LOG_CPU_INSTRUCTION
-    PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, OPCODE_STRING[inst.opcode]);
+    PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
     #endif
 }
 
