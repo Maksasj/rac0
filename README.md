@@ -4,3 +4,4 @@
 - interrupts | interrupt descriptor table | IDT
 - finish assembler
 - macros for assembler
+- mmu mechanism
