@@ -3,7 +3,7 @@
     
     @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
 
-    $data:
+    data:
         pusha 0x1
         some db "some some some"
         somesome dw 0xFFFF
@@ -11,10 +11,10 @@
         some db "some some some"
         somesome dw 0xFFFF
     
-    $code:
-        $loop:
-        pusha 0x1
-        addat 0x1
-        jmpga $loop
-        halt 
+    code:
+        lop:
+            pusha 0x1
+            addat 0x1
+            jmpga &lop
+            halt 
 }
