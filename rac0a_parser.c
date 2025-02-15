@@ -1,49 +1,4 @@
-#ifndef RAC0_PARSER_H
-#define RAC0_PARSER_H
-
-#define HAUL_IMPLEMENTATION
-#include "haul/haul.h"
-
-#include "rac0_lexer.h"
-
-typedef enum {
-    RAC0A_HL_TYPE_CONSTVAL = 0,
-    RAC0A_HL_TYPE_LABEL = 1,
-    RAC0A_HL_TYPE_INSTRUCTION = 2,
-    RAC0A_HL_TYPE_WORD_DEF = 3,
-    RAC0A_HL_TYPE_BYTE_DEF = 4,
-} rac0a_hl_statement_type_t;
-
-static char* RAC0A_HL_STRING[] = {
-    "CONSTVAL",
-    "LABEL",
-    "INSTRUCTION",
-    "WORD_DEF",
-    "BYTE_DEF"
-};
-
-typedef struct {
-    rac0a_hl_statement_type_t type;
-
-    union {
-        int constval;
-        int label;
-        int instruction;
-        int word_def;
-        int byte_def;
-    } as;
-} rac0a_hl_statement_t;
-
-typedef struct {
-    vector_t hl_statements;
-} rac0a_program_t;
-
-typedef struct {
-    rac0a_result_code_t code;
-} rac0a_parse_result_t;
-
-rac0a_parse_result_t rac0a_parse_module(rac0a_program_t* program, rac0a_lexer_t* lexer);
-void rac0a_parse_program(rac0a_program_t* program, const char* input);
+#include "rac0a_parser.h"
 
 rac0a_parse_result_t rac0a_parse_token(rac0a_lexer_t* lexer, rac0a_token_type_t type) {
     rac0a_lexer_t backup = *lexer;
@@ -375,5 +330,3 @@ void rac0a_parse_program(rac0a_program_t* program, const char* input) {
         }
     }
 }
-
-#endif

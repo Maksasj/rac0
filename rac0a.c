@@ -1,10 +1,5 @@
-#include "rac0_utils.h"
-
-#define PLUM_IMPLEMENTATION
-#include "plum.h"
-
-#include "rac0_parser.h"
-#include "rac0_assembler.h"
+#include "rac0a_utils.h"
+#include "rac0a_assembler.h"
 
 int main(int argc, char *argv[]) {
     if(argc < 2) {

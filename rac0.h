@@ -3,9 +3,6 @@
 
 #include <stdio.h>
 
-#define PLUM_IMPLEMENTATION
-#include "plum.h"
-
 #include "rac0_base.h"
 
 typedef struct {
@@ -13,11 +10,6 @@ typedef struct {
     void (*push)(void* device_data, rac0_u64_t adress, rac0_value_t value);
     rac0_value_t (*pool)(void* device_data, rac0_u64_t adress);
 } rac0_device_t;
-
-typedef struct {
-    rac0_opcode_t opcode;   // 16 bits | 2 bytes
-    rac0_value_t value;     // 64 bits | 8 bytes
-} rac0_inst_t;              // 80 bits | 10 bytes
 
 typedef struct {
     rac0_value_t values[RAC0_MAX_STACK_SIZE];

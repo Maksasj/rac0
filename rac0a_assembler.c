@@ -1,7 +1,4 @@
-#ifndef RAC0_ASSEMBLER_H
-#define RAC0_ASSEMBLER_H
-
-#include "rac0_parser.h"
+#include "rac0a_assembler.h"
 
 void rac0a_assemble_program(rac0a_program_t* program) {
     int size = vector_size(&program->hl_statements);
@@ -12,5 +9,3 @@ void rac0a_assemble_program(rac0a_program_t* program) {
         PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
     }
 }
-
-#endif

@@ -1,11 +1,4 @@
-#ifndef RAC0_UTILS_H
-#define RAC0_UTILS_H
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#define PLUM_IMPLEMENTATION
-#include "plum.h"
+#include "rac0a_utils.h"
 
 char* rac0_utils_read_file_string(char* file_name) {
     FILE *stream = fopen(file_name, "r");
@@ -48,5 +41,3 @@ char* rac0_utils_read_file_string(char* file_name) {
 
     return source;
 }
-
-#endif
