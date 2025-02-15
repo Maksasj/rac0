@@ -1,11 +1,9 @@
-jmpga &code
+@include "rac0.sys.asm"
 
 @module main {
     @constval zero 0x0
     @constval one 0x1
-    @constval one 0xFFFFAAAAFFFFAAAA
-
-    @constval sys_device_0 0x0
+    @constval other 0xFFFFAAAAFFFFAAAA
 
     data:
         some_const dw 0x69

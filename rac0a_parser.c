@@ -66,10 +66,12 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
     char* source = rac0_utils_read_file_string("rac0.sys.asm");
 
     vector_t child_hl = rac0a_parse_program(source);
-    free_vector_content(&child_hl);
-    free_vector(&child_hl);
 
-    // todo merge child_program with our program if success
+    for(int i = 0; i < vector_size(&child_hl); ++i) {
+        vector_push(&parser->hl_statements, vector_get(&child_hl, i)); 
+    }
+
+    free_vector(&child_hl);
 
     PLUM_LOG(PLUM_INFO, "Successfully to included file");
 

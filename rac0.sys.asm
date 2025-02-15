@@ -1,7 +1,6 @@
+jmpga &code
+
 @module sys {
-    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
-    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
-    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
-    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
-    @constval THIS_IS_A_COMPILE_TIME_CONST_VALUE 0xFFFF
+    @constval sys_device_0 0x0
+    @constval sys_device_1 0x1
 }
