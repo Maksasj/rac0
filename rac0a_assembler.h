@@ -5,12 +5,15 @@
 
 typedef struct {
     char* label;
+    rac0_value_t value;
+} rac0a_constval_hl_info_t;
+
+typedef struct {
+    char* label;
     rac0_value_t pointer;
 } rac0a_label_hl_info_t;
 
 typedef struct {
-    vector_t labels;
-
     byte_vector_t program;
 } rac0a_assembler_t;
 

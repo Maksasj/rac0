@@ -24,12 +24,19 @@ static char* RAC0A_HL_STRING[] = {
 
 typedef struct {
     char* label;
+    rac0_value_t value;
+} rac0a_hl_constval_statement_t;
+
+typedef struct {
+    char* label;
 } rac0a_hl_label_statement_t;
 
 typedef enum {
     RAC0A_HL_VALUE_TYPE_NUMBER,
     RAC0A_HL_VALUE_TYPE_LABEL_POINTER,
     RAC0A_HL_VALUE_TYPE_CONSTVAL,
+
+    RAC0A_HL_VALUE_TYPE_NONE,
 } rac0a_hl_value_type_t;
 
 typedef struct {
@@ -70,8 +77,7 @@ typedef struct {
     rac0a_hl_statement_type_t type;
 
     union {
-        int constval;
-
+        rac0a_hl_constval_statement_t constval;
         rac0a_hl_label_statement_t label;
         rac0a_hl_instruction_statement_t instruction;
         rac0a_hl_word_def_statement_t word_def;
@@ -95,7 +101,7 @@ rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const char* 
 
 rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser);
 
-rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac0a_hl_constval_statement_t* constval);
 
 rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_hl_label_statement_t* label);
 
