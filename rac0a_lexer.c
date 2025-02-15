@@ -92,12 +92,19 @@ rac0a_lex_result_t rac0a_lex_colon(rac0a_token_t* token, rac0a_lexer_t* lexer) {
 rac0a_lex_result_t rac0a_lex_label(rac0a_token_t* token, rac0a_lexer_t* lexer) {
     int start = lexer->pointer;
 
+    if(!isalpha(lexer->input[lexer->pointer]) && lexer->input[lexer->pointer] != '_')
+        goto cont;
+
+    ++lexer->pointer;
+
     while(1) {
-        if(!isalpha(lexer->input[lexer->pointer]) && lexer->input[lexer->pointer] != '_')
+        if(!isalpha(lexer->input[lexer->pointer]) && lexer->input[lexer->pointer] != '_' && !isdigit(lexer->input[lexer->pointer]))
             break;
 
         ++lexer->pointer;
     }
+
+    cont:
 
     if(start == lexer->pointer) {
         lexer->pointer = start;
