@@ -5,6 +5,13 @@
     @constval one 0x1
     @constval other 0xFFFFAAAAFFFFAAAA
 
+    @constblock push2() {
+        pusha $one
+        pusha $one
+    }
+
+    $push2()
+
     data:
         some_const dw 0x69
  

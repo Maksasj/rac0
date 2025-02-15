@@ -123,6 +123,8 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
 
 rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser);
 
+rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser);
+
 rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_hl_word_def_statement_t* value);
 
 rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser);
