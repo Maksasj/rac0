@@ -3,15 +3,23 @@
 rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_t type, rac0a_token_t* ret) {
     rac0a_lexer_t backup = parser->lexer;
 
-    rac0a_token_t token = rac0a_next_token(&parser->lexer);
+    // there we skip comments
+    while (1) {
+        rac0a_token_t token = rac0a_next_token(&parser->lexer);
+        
+        if(token.type == RAC0A_TOKEN_COMMENT)
+            continue;
 
-    if(token.type == type) {
-        if(ret != NULL)
-            *ret = token;
+        if(token.type == type) {
+            if(ret != NULL)
+                *ret = token;
 
-        return (rac0a_parse_result_t) { RAC0A_OK };
+            return (rac0a_parse_result_t) { RAC0A_OK };
+        }
+
+        break;
     }
-    
+
     parser->lexer = backup;
 
     return (rac0a_parse_result_t) { RAC0A_ERROR };
@@ -19,14 +27,10 @@ rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_
 
 rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const char* lexem) {
     rac0a_lexer_t backup = parser->lexer;
-    
-    rac0a_token_t token = rac0a_next_token(&parser->lexer);
 
-    if(token.type != RAC0A_TOKEN_LABEL) {
-        parser->lexer = backup;
-        rac0a_free_token(token);
+    rac0a_token_t token;
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK)
         return (rac0a_parse_result_t) { RAC0A_ERROR };
-    }
 
     if(strcmp(token.lexeme, lexem) != 0) {
         parser->lexer = backup;
@@ -122,11 +126,45 @@ rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser) {
     return rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL);
 }
 
-rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser) {
-    return rac0a_parse_token(parser, RAC0A_TOKEN_NUMBER, NULL);
+/*
+Value can be:
+- number
+- constval
+- pointer
+*/
+
+rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* value) {
+    rac0a_token_t token;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_NUMBER, &token).code == RAC0A_OK) {
+        *value = strtoull(token.lexeme, NULL, 0);
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    return (rac0a_parse_result_t) { RAC0A_ERROR };
 }
 
-rac0a_parse_result_t rac0a_parse_label_usage(rac0a_parser_t* parser) {
+rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, char** label) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_DOLLAR, NULL).code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    rac0a_token_t token;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    *label = token.lexeme;
+
+    return (rac0a_parse_result_t) { RAC0A_OK };
+}
+
+rac0a_parse_result_t rac0a_parse_label_pointer(rac0a_parser_t* parser, char** label) {
     rac0a_lexer_t backup = parser->lexer;
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_AMPERSAND, NULL).code != RAC0A_OK) {
@@ -134,19 +172,50 @@ rac0a_parse_result_t rac0a_parse_label_usage(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL).code != RAC0A_OK) {
+    rac0a_token_t token;
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
+    *label = token.lexeme;
+
     return (rac0a_parse_result_t) { RAC0A_OK };
+}
+
+rac0a_parse_result_t rac0a_parse_value(rac0a_parser_t* parser, rac0a_hl_value_t* value) {
+    rac0_value_t number;
+    char* label;
+
+    if(rac0a_parse_number(parser, &number).code == RAC0A_OK) {
+        value->type = RAC0A_HL_VALUE_TYPE_NUMBER;
+        value->as.value = number;
+
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    if(rac0a_parse_const_thing_usage(parser, &label).code == RAC0A_OK) {
+        value->type = RAC0A_HL_VALUE_TYPE_CONSTVAL;
+        value->as.constval_label = label;
+
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    if(rac0a_parse_label_pointer(parser, &label).code == RAC0A_OK) {
+        value->type = RAC0A_HL_VALUE_TYPE_LABEL_POINTER;
+        value->as.label = label;
+
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    return (rac0a_parse_result_t) { RAC0A_ERROR };
 }
 
 rac0a_parse_result_t rac0a_parse_instruction_noarg(rac0a_parser_t* parser, const char* lexem) {
     return rac0a_parse_exact_word(parser, lexem);
 }
 
-rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const char* lexem, rac0_value_t* value) {
+rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const char* lexem, rac0a_hl_value_t* value) {
     rac0a_lexer_t backup = parser->lexer;
 
     if(rac0a_parse_exact_word(parser, lexem).code != RAC0A_OK) {
@@ -154,12 +223,7 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const c
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_number(parser).code == RAC0A_OK) {
-        *value = 0xaaaaaaaaaaaaaaaF; 
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
-
-    if(rac0a_parse_label_usage(parser).code == RAC0A_OK)
+    if(rac0a_parse_value(parser, value).code == RAC0A_OK)
         return (rac0a_parse_result_t) { RAC0A_OK };
 
     parser->lexer = backup;
@@ -167,24 +231,25 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const c
     return (rac0a_parse_result_t) { RAC0A_ERROR };
 }
 
-rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0_inst_t* inst) {
+rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_instruction_statement_t* inst) {
     rac0a_lexer_t backup = parser->lexer;
 
-    rac0_value_t value = 0x0;
+    rac0a_hl_value_t value;
 
     if(rac0a_parse_instruction_noarg(parser, "halt").code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "HALT instruction definition");
-        
-        inst->opcode = RAC0_HALT_OPCODE;
-        inst->value = value;
 
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_HALT_OPCODE;
+        
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
     if(rac0a_parse_instruction_arg(parser, "pusha", &value).code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "PUSHA instruction definition");
 
-        inst->opcode = RAC0_PUSHA_OPCODE;
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_PUSHA_OPCODE;
         inst->value = value;
 
         return (rac0a_parse_result_t) { RAC0A_OK };
@@ -193,16 +258,18 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0_inst_t
     if(rac0a_parse_instruction_arg(parser, "addat", &value).code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "ADDAT instruction definition");
 
-        inst->opcode = RAC0_ADDAT_OPCODE;
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_ADDAT_OPCODE;
         inst->value = value;
-        
+
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
     if(rac0a_parse_instruction_arg(parser, "jmpga", &value).code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "JMPGA instruction definition");
 
-        inst->opcode = RAC0_JMPGA_OPCODE;
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_JMPGA_OPCODE;
         inst->value = value;
 
         return (rac0a_parse_result_t) { RAC0A_OK };
@@ -262,8 +329,7 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
 
 rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
     while(1) {
-        rac0_inst_t inst;
-
+        rac0a_hl_instruction_statement_t inst;
         rac0a_hl_label_statement_t label;
         rac0a_hl_word_def_statement_t word_def;
 
@@ -302,7 +368,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
         } else if(rac0a_parse_instruction(parser, &inst).code == RAC0A_OK) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
             st->type = RAC0A_HL_TYPE_INSTRUCTION;
-            st->as.instruction.inst = inst;
+            st->as.instruction = inst;
 
             vector_push(&parser->hl_statements, st);
         } else if(rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL).code == RAC0A_OK) {

@@ -26,6 +26,7 @@ typedef enum {
     RAC0A_TOKEN_STRING = 11,
     RAC0A_TOKEN_AMPERSAND = 12,
 
+    RAC0A_TOKEN_COMMENT = 13,     
     RAC0A_TOKEN_EOF = 0,     
     RAC0A_TOKEN_ERROR = -1
 } rac0a_token_type_t;
@@ -93,6 +94,8 @@ rac0a_lex_result_t rac0a_lex_percent(rac0a_token_t* token, rac0a_lexer_t* lexer)
 rac0a_lex_result_t rac0a_lex_ampersand(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
 rac0a_boolean_t rac0a_in_range_include(char value, char min, char max);
+
+rac0a_lex_result_t rac0a_lex_comment(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
 rac0a_lex_result_t rac0a_lex_string(rac0a_token_t* token, rac0a_lexer_t* lexer);
 

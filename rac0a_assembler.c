@@ -53,7 +53,45 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
             info->label = rac0a_string_copy(statement->as.label.label);
             vector_push(&assembler.labels, info);
         } else  if(statement->type == RAC0A_HL_TYPE_INSTRUCTION) {
-            rac0a_assembler_program_push_instruction(&assembler, statement->as.instruction.inst);
+            rac0a_hl_instruction_statement_t hl_instruction = statement->as.instruction;
+
+            rac0_inst_t instruction;
+
+            if(hl_instruction.inst.type == RAC0A_HL_INSTRUCTION_TYPE_OPCODE) {
+                instruction.opcode = hl_instruction.inst.as.opcode;
+            } else if(hl_instruction.inst.type == RAC0A_HL_INSTRUCTION_TYPE_CONSTLABEL) {
+                PLUM_LOG(PLUM_WARNING, "Not implemented");
+            } else {
+                PLUM_LOG(PLUM_WARNING, "Unreachable");
+            }
+
+            if(hl_instruction.value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
+                PLUM_LOG(PLUM_WARNING, "Not implemented");
+            } else if(hl_instruction.value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
+                instruction.value = hl_instruction.value.as.value;
+            } else if(hl_instruction.value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
+                PLUM_LOG(PLUM_WARNING, "Not implemented");
+
+                int found = 0;
+
+                for(int i = 0; i < vector_size(&assembler.labels); ++i) {
+                    rac0a_label_hl_info_t* label_info = vector_get(&assembler.labels, i);
+                    
+                    if(strcmp(hl_instruction.value.as.label, label_info->label) == 0) {
+                        instruction.value = label_info->pointer;
+                        ++found;
+                        break;
+                    }
+                } 
+
+                if(!found)
+                    PLUM_LOG(PLUM_ERROR, "Label with '%s' name is not defined", hl_instruction.value.as.label);
+            
+            } else {
+                PLUM_LOG(PLUM_WARNING, "Unreachable");
+            }
+
+            rac0a_assembler_program_push_instruction(&assembler, instruction);
         } else  if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
             rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
             info->pointer = rac0a_assembler_program_get_pc(&assembler);

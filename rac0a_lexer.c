@@ -234,6 +234,29 @@ rac0a_boolean_t rac0a_in_range_include(char value, char min, char max) {
     return (value >= min) && (value <= max); 
 }
 
+rac0a_lex_result_t rac0a_lex_comment(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(strncmp(lexer->input + lexer->pointer, "//", 2) != 0)
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    while(1) {
+        ++lexer->pointer;
+        char symbol = lexer->input[lexer->pointer];
+
+        if(symbol == '\n')
+            break;
+
+        if(symbol == '\0')
+            return (rac0a_lex_result_t) { RAC0A_ERROR };
+    }
+
+    ++lexer->pointer;
+
+    token->lexeme = NULL; 
+    token->type = RAC0A_TOKEN_COMMENT;
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
 rac0a_lex_result_t rac0a_lex_string(rac0a_token_t* token, rac0a_lexer_t* lexer) {
     if (lexer->input[lexer->pointer] != '"') 
         return (rac0a_lex_result_t) { RAC0A_ERROR };
@@ -347,6 +370,9 @@ rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer) {
         return token;
 
     if(rac0a_lex_ampersand(&token, lexer).code == RAC0A_OK)
+        return token;
+
+    if(rac0a_lex_comment(&token, lexer).code == RAC0A_OK)
         return token;
         
     if(rac0a_lex_eof(&token, lexer).code == RAC0A_OK)
