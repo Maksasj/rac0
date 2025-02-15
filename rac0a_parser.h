@@ -7,7 +7,7 @@
 #include "rac0_utils.h"
 
 typedef enum {
-    RAC0A_HL_TYPE_CONSTVAL = 0,
+    RAC0A_HL_TYPE_CONSTVAL_DECL = 0,
     RAC0A_HL_TYPE_LABEL = 1,
     RAC0A_HL_TYPE_INSTRUCTION = 2,
     RAC0A_HL_TYPE_WORD_DEF = 3,

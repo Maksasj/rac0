@@ -55,7 +55,7 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
 
         PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
 
-        if(statement->type == RAC0A_HL_TYPE_CONSTVAL) {
+        if(statement->type == RAC0A_HL_TYPE_CONSTVAL_DECL) {
             rac0a_constval_hl_info_t* info = (rac0a_constval_hl_info_t*) malloc(sizeof(rac0a_constval_hl_info_t));
             info->value = statement->as.constval.value;
             info->label = rac0a_string_copy(statement->as.constval.label);
@@ -86,7 +86,7 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
 
         PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
 
-        if(statement->type == RAC0A_HL_TYPE_CONSTVAL) {
+        if(statement->type == RAC0A_HL_TYPE_CONSTVAL_DECL) {
             PLUM_LOG(PLUM_WARNING, "Unreachable");
         } else  if(statement->type == RAC0A_HL_TYPE_LABEL) {
             PLUM_LOG(PLUM_WARNING, "Unreachable");

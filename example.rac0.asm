@@ -9,7 +9,7 @@
         pusha $one
         pusha $one
     }
-
+  
     $push2()
 
     data:
@@ -18,9 +18,9 @@
     code:
         pusha $zero
 
-    lo:        
-        addat $one
-        pushda $sys_device_0
-        jmpga &lo
-        halt 
+        lo:        
+            addat $one
+            pushda $sys_device_0
+            jmpga &lo
+            halt 
 }

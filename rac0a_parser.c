@@ -411,7 +411,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             PLUM_LOG(PLUM_TRACE, "Constval definition");
 
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-            st->type = RAC0A_HL_TYPE_CONSTVAL;
+            st->type = RAC0A_HL_TYPE_CONSTVAL_DECL;
             st->as.constval = constval;
             
             vector_push(&parser->hl_statements, st);
@@ -420,7 +420,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
 
             /*
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-            st->type = RAC0A_HL_TYPE_CONSTVAL;
+            st->type = RAC0A_HL_TYPE_CONSTVAL_DECL;
             st->as.constval = constval;
             
             vector_push(&parser->hl_statements, st);
