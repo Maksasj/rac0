@@ -54,7 +54,7 @@ typedef rac0_u16_t rac0_opcode_t;
 
 #define RAC0_WAIT_OPCODE        ((rac0_opcode_t) 22)
 
-typedef struct {
+typedef struct __attribute__((packed)) {
     rac0_opcode_t opcode;   // 16 bits | 2 bytes
     rac0_value_t value;     // 64 bits | 8 bytes
 } rac0_inst_t;              // 80 bits | 10 bytes

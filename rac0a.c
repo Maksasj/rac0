@@ -1,4 +1,4 @@
-#include "rac0a_utils.h"
+#include "rac0_utils.h"
 #include "rac0a_assembler.h"
 
 int main(int argc, char *argv[]) {
@@ -12,14 +12,17 @@ int main(int argc, char *argv[]) {
     if(source == NULL)
         return 1;
 
-    rac0a_program_t program;
+    PLUM_LOG(PLUM_EXPERIMENTAL, "%d", sizeof(rac0_inst_t));
 
-    rac0a_parse_program(&program, source);
+    vector_t hl_statements = rac0a_parse_program(source);
     PLUM_LOG(PLUM_INFO, "Parsed program");
+    PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&hl_statements));
 
-    PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&program.hl_statements));
+    byte_vector_t program = rac0a_assemble_program(&hl_statements);
 
-    rac0a_assemble_program(&program);
+    FILE *out_file = fopen("a.bin", "wb");
+    fwrite(program.data, sizeof(rac0_byte_t), program.size, out_file);
+    fclose(out_file);
 
     return 0;
 }

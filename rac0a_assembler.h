@@ -3,6 +3,18 @@
 
 #include "rac0a_parser.h"
 
-void rac0a_assemble_program(rac0a_program_t* program);
+typedef struct {
+    vector_t constvals;
+
+    byte_vector_t program;
+} rac0a_assembler_t;
+
+void rac0a_assembler_program_push_byte(rac0a_assembler_t* assembler, rac0_byte_t byte);
+void rac0a_assembler_program_push_word(rac0a_assembler_t* assembler, rac0_value_t value);
+void rac0a_assembler_program_push_instruction(rac0a_assembler_t* assembler, rac0_inst_t inst);
+
+rac0_value_t rac0a_assembler_program_get_pc(rac0a_assembler_t* assembler);
+
+byte_vector_t rac0a_assemble_program(vector_t* hl_statements);
 
 #endif

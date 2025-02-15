@@ -4,6 +4,8 @@
 #define RAC0_LOG_CPU_INSTRUCTION
 #include "rac0.h"
 
+#include "rac0_utils.h"
+
 void debug_console_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
     PLUM_LOG(PLUM_EXPERIMENTAL, "%d", value);
 }
@@ -21,7 +23,7 @@ int main() {
             .top = 0 
         }
     };
-
+    
     rac0_inst_t insts[] = {
         (rac0_inst_t) { .opcode = RAC0_PUSHA_OPCODE, .value = 0x0000000000000001 },
         (rac0_inst_t) { .opcode = RAC0_ADDAT_OPCODE, .value = 1 },
@@ -30,9 +32,15 @@ int main() {
         (rac0_inst_t) { .opcode = RAC0_HALT_OPCODE },
     };
 
+    rac0_byte_t* byte_code = (rac0_byte_t*) rac0_utils_read_file_string("a.bin");
+    
+    if(byte_code == NULL)
+        return 1;
+
     rac0_memory_t memory = (rac0_memory_t) {
         // .memory = (rac0_byte_t*) malloc(sizeof(rac0_byte_t) * RAC0_MEGABYTE_SIZE)  
-        .memory = (rac0_byte_t*) &insts
+        // .memory = (rac0_byte_t*) &insts
+        .memory = (rac0_byte_t*) byte_code
     };
 
     rac0_device_t devices[] = {
