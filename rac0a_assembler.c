@@ -37,7 +37,7 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
     int size = vector_size(hl_statements);
     
     rac0a_assembler_t assembler;
-    create_vector(&assembler.constvals, 100);
+    create_vector(&assembler.labels, 100);
     create_byte_vector(&assembler.program, 1000);
     
     for(int i = 0; i < size; ++i) {
@@ -48,17 +48,29 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
         if(statement->type == RAC0A_HL_TYPE_CONSTVAL) {
 
         } else  if(statement->type == RAC0A_HL_TYPE_LABEL) {
-            // rac0a_assembler_program_push_instruction(&assembler, statement->as.instruction.inst);
+            rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
+            info->pointer = rac0a_assembler_program_get_pc(&assembler);
+            info->label = rac0a_string_copy(statement->as.label.label);
+            vector_push(&assembler.labels, info);
         } else  if(statement->type == RAC0A_HL_TYPE_INSTRUCTION) {
             rac0a_assembler_program_push_instruction(&assembler, statement->as.instruction.inst);
         } else  if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
-            // rac0a_assembler_program_push_word(&assembler, statement->as.word_def.value);
-            // Todo save pointer to this word definition
+            rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
+            info->pointer = rac0a_assembler_program_get_pc(&assembler);
+            info->label = rac0a_string_copy(statement->as.label.label);
+            vector_push(&assembler.labels, info);
+
+            rac0a_assembler_program_push_word(&assembler, statement->as.word_def.value);
         } else  if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
 
         } else  {
 
         }
+    }
+
+    for(int i = 0; i < vector_size(&assembler.labels); ++i) {
+        rac0a_label_hl_info_t* info = vector_get(&assembler.labels, i);
+        PLUM_LOG(PLUM_EXPERIMENTAL, "Deteced label '%s' at 0x%.16llx", info->label, info->pointer);
     }
 
     return assembler.program;

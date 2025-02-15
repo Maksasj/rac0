@@ -23,18 +23,27 @@ static char* RAC0A_HL_STRING[] = {
 };
 
 typedef struct {
+    char* label;
+} rac0a_hl_label_statement_t;
+
+typedef struct {
+    char* label;
+    rac0_value_t value;
+} rac0a_hl_word_def_statement_t;
+
+typedef struct {
     rac0a_hl_statement_type_t type;
 
     union {
         int constval;
-        int label;
+
+        rac0a_hl_label_statement_t label;
+
         struct {
             rac0_inst_t inst;
         } instruction;
 
-        struct {
-            rac0_value_t value;
-        } word_def;
+        rac0a_hl_word_def_statement_t word_def;
 
         int byte_def;
     } as;
@@ -57,7 +66,7 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser);
 
 rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser);
 
-rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_hl_label_statement_t* label);
 
 rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser);
 
@@ -73,7 +82,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0_inst_t
 
 rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser);
 
-rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0_value_t* value);
+rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_hl_word_def_statement_t* value);
 
 rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser);
 

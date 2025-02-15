@@ -12,8 +12,6 @@ int main(int argc, char *argv[]) {
     if(source == NULL)
         return 1;
 
-    PLUM_LOG(PLUM_EXPERIMENTAL, "%d", sizeof(rac0_inst_t));
-
     vector_t hl_statements = rac0a_parse_program(source);
     PLUM_LOG(PLUM_INFO, "Parsed program");
     PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&hl_statements));

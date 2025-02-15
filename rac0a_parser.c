@@ -98,10 +98,12 @@ rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser) {
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser) {
+rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_hl_label_statement_t* label) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL).code != RAC0A_OK) {
+    rac0a_token_t token;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -110,6 +112,8 @@ rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
+
+    label->label = token.lexeme;
 
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
@@ -230,10 +234,12 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser) {
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0_value_t* value) {
+rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_hl_word_def_statement_t* value) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL).code != RAC0A_OK) {
+    rac0a_token_t label;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -248,7 +254,8 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0_va
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    *value = 0xaaaaaaaaaaaaaaaF;
+    value->value = 0xaaaaaaaaaaaaaaaF;
+    value->label = label.lexeme;
 
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
@@ -256,7 +263,9 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0_va
 rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
     while(1) {
         rac0_inst_t inst;
-        rac0_value_t value;
+
+        rac0a_hl_label_statement_t label;
+        rac0a_hl_word_def_statement_t word_def;
 
         if(rac0a_parse_include_statement(parser).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Include definition");        
@@ -266,11 +275,13 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
             st->type = RAC0A_HL_TYPE_CONSTVAL;
             vector_push(&parser->hl_statements, st);
-        } else if(rac0a_parse_label_definition(parser).code == RAC0A_OK) {
+        } else if(rac0a_parse_label_definition(parser, &label).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Label definition");
 
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
             st->type = RAC0A_HL_TYPE_LABEL;
+            st->as.label = label;
+
             vector_push(&parser->hl_statements, st);
         } else if(rac0a_parse_byte_definition(parser).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Byte definition");
@@ -278,12 +289,12 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
             st->type = RAC0A_HL_TYPE_BYTE_DEF;
             vector_push(&parser->hl_statements, st);
-        } else if(rac0a_parse_word_definition(parser, &value).code == RAC0A_OK) {
+        } else if(rac0a_parse_word_definition(parser, &word_def).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Word definition");
 
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
             st->type = RAC0A_HL_TYPE_WORD_DEF;
-            st->as.word_def.value = value;
+            st->as.word_def = word_def;
 
             vector_push(&parser->hl_statements, st);
         } else if(rac0a_parse_module(parser).code == RAC0A_OK) {

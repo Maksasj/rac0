@@ -4,7 +4,12 @@
 #include "rac0a_parser.h"
 
 typedef struct {
-    vector_t constvals;
+    char* label;
+    rac0_value_t pointer;
+} rac0a_label_hl_info_t;
+
+typedef struct {
+    vector_t labels;
 
     byte_vector_t program;
 } rac0a_assembler_t;
