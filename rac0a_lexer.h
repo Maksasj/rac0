@@ -6,7 +6,11 @@
 #include "rac0_base.h"
 #include "rac0_utils.h"
 
-// Lexer
+typedef enum {
+    RAC0A_OK,
+    RAC0A_ERROR
+} rac0a_result_code_t;
+
 typedef enum {
     RAC0A_TOKEN_AT = 1,     
     RAC0A_TOKEN_DOLLAR = 2,     
@@ -40,24 +44,15 @@ typedef struct {
     int pointer;
 } rac0a_lexer_t;
 
-typedef enum {
-    RAC0A_OK,
-    RAC0A_ERROR
-} rac0a_result_code_t;
-
 typedef struct {
     rac0a_result_code_t code;
 } rac0a_lex_result_t;
 
 // lexer
 void rac0a_free_token(rac0a_token_t token);
-
-void rac0a_skip_whitespace(rac0a_lexer_t* lexer);
-rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer);
-
-// lexer
 void rac0a_skip_whitespace(rac0a_lexer_t* lexer);
 
+// tokens
 rac0a_lex_result_t rac0a_lex_at(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
 rac0a_lex_result_t rac0a_lex_dollar(rac0a_token_t* token, rac0a_lexer_t* lexer);

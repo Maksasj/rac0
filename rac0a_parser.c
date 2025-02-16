@@ -137,7 +137,6 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
     }
 
     string_t include_path;
-
     if(rac0a_parse_string(parser, &include_path).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
@@ -246,6 +245,7 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
         parser->lexer = backup;
         rac0a_free_token(token);
         free_vector(&constblock_statements);
+        // todo clear constblock statemsnts
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
