@@ -26,7 +26,7 @@ typedef enum {
     RAC0A_TOKEN_AMPERSAND = 12,
 
     RAC0A_TOKEN_COMMENT = 13,     
-    RAC0A_TOKEN_EOF = 0,     
+    RAC0A_TOKEN_EOF = 0,
     RAC0A_TOKEN_ERROR = -1
 } rac0a_token_type_t;
 

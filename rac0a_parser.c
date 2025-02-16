@@ -1,5 +1,6 @@
 #include "rac0a_parser.h"
 
+// parsing utils
 rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_t type, rac0a_token_t* ret) {
     rac0a_lexer_t backup = parser->lexer;
 
@@ -45,10 +46,79 @@ rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const char* 
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
+// parsing shortcuts
+rac0a_parse_result_t rac0a_parse_at(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_AT, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_dollar(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_DOLLAR, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_l_paren(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_L_PAREN, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_r_paren(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_R_PAREN, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_colon(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_COLON, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_label(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* number) {
+    rac0a_token_t token;
+
+    // todo add support for float binary and decimal numbers
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_NUMBER, &token).code == RAC0A_OK) {
+        *number = strtoull(token.lexeme, NULL, 0);
+        
+        rac0a_free_token(token);
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    rac0a_free_token(token);
+    return (rac0a_parse_result_t) { RAC0A_ERROR };
+}
+
+rac0a_parse_result_t rac0a_parse_l_bracket(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_L_BRACKET, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_r_bracket(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_R_BRACKET, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_percent(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_PERCENT, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_string(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_STRING, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_ampersand(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_AMPERSAND, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_comment(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_COMMENT, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL);
+}
+
+// other
 rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_AT, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -57,12 +127,13 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
-    
+
+    // todo
     if(rac0a_parse_token(parser, RAC0A_TOKEN_STRING, NULL).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
-    
+
     PLUM_LOG(PLUM_INFO, "Trying to include file");
 
     char* source = rac0_utils_read_file_string("rac0.sys.asm");
@@ -83,7 +154,7 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
 rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac0a_hl_constval_statement_t* constval) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_AT, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -116,7 +187,7 @@ rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac
 rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, rac0a_hl_constblock_statement_t* block) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_AT, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -133,17 +204,17 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_L_PAREN, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_l_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_R_PAREN, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_L_BRACKET, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -156,7 +227,7 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_R_BRACKET, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_r_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -177,7 +248,7 @@ rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_COLON, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_colon(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -187,25 +258,10 @@ rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser) {
-    return rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL);
-}
-
-rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* value) {
-    rac0a_token_t token;
-
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_NUMBER, &token).code == RAC0A_OK) {
-        *value = strtoull(token.lexeme, NULL, 0);
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
-
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
-}
-
 rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, char** label) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_DOLLAR, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_dollar(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -225,7 +281,7 @@ rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, char*
 rac0a_parse_result_t rac0a_parse_label_pointer(rac0a_parser_t* parser, char** label) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_AMPERSAND, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_ampersand(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -470,7 +526,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, vector_t
         } else if(rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL).code == RAC0A_OK) {
             --parser->lexer.pointer;
             break;
-        } else if(rac0a_parse_token(parser, RAC0A_TOKEN_R_BRACKET, NULL).code == RAC0A_OK) {
+        } else if(rac0a_parse_r_bracket(parser).code == RAC0A_OK) {
             --parser->lexer.pointer;
             break;
         } else {
@@ -484,22 +540,22 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, vector_t
 rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_DOLLAR, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_dollar(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_label(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_L_PAREN, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_l_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_R_PAREN, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -510,7 +566,7 @@ rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser) {
 rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_AT, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -520,12 +576,12 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_label(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_L_BRACKET, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -535,7 +591,7 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_R_BRACKET, NULL).code != RAC0A_OK) {
+    if(rac0a_parse_r_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
