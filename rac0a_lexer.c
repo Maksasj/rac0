@@ -299,13 +299,15 @@ rac0a_lex_result_t rac0a_lex_string(rac0a_token_t* token, rac0a_lexer_t* lexer) 
         }
     }
 
-   ++lexer->pointer;
+    ++lexer->pointer;
 
     // Save lexeme
-    int length = lexer->pointer - start;
+    int length = lexer->pointer - start - 2;
 
     token->lexeme = malloc(length + 1);
-    strncpy(token->lexeme, &lexer->input[start], length);
+
+    if(length != 0)
+        strncpy(token->lexeme, &lexer->input[start + 1], length);
 
     token->lexeme[length] = '\0';
     token->type = RAC0A_TOKEN_STRING;

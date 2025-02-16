@@ -6,6 +6,8 @@
 #include "rac0a_lexer.h"
 #include "rac0_utils.h"
 
+typedef char* string_t;
+
 typedef enum {
     RAC0A_HL_TYPE_CONSTVAL_DECL = 0,
     RAC0A_HL_TYPE_CONSTBLOCK_DECL = 1,
@@ -25,7 +27,7 @@ static char* RAC0A_HL_STRING[] = {
 };
 
 typedef struct {
-    char* label;
+    string_t label;
     rac0_value_t value;
 } rac0a_hl_constval_statement_t;
 
@@ -112,7 +114,7 @@ typedef struct {
 
 // parsing utils
 rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_t type, rac0a_token_t* ret);
-rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const char* lexem);
+rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const string_t lexem);
 
 // parsing shortcuts
 rac0a_parse_result_t rac0a_parse_at(rac0a_parser_t* parser);
@@ -127,7 +129,7 @@ rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* nu
 rac0a_parse_result_t rac0a_parse_l_bracket(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_r_bracket(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_percent(rac0a_parser_t* parser);
-rac0a_parse_result_t rac0a_parse_string(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_string(rac0a_parser_t* parser, string_t* string);
 rac0a_parse_result_t rac0a_parse_ampersand(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_comment(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser);
@@ -140,16 +142,13 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
 rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac0a_hl_constval_statement_t* constval);
 
 rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_hl_label_statement_t* label);
-
-rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, char** label);
-
-rac0a_parse_result_t rac0a_parse_label_pointer(rac0a_parser_t* parser, char** label);
-
+rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, string_t* label);
+rac0a_parse_result_t rac0a_parse_label_pointer(rac0a_parser_t* parser, string_t* label);
 rac0a_parse_result_t rac0a_parse_value(rac0a_parser_t* parser, rac0a_hl_value_t* value);
 
-rac0a_parse_result_t rac0a_parse_instruction_noarg(rac0a_parser_t* parser, const char* lexem);
+rac0a_parse_result_t rac0a_parse_instruction_noarg(rac0a_parser_t* parser, const string_t lexem);
 
-rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const char* lexem, rac0a_hl_value_t* value);
+rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const string_t lexem, rac0a_hl_value_t* value);
 
 rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_instruction_statement_t* inst);
 
@@ -163,6 +162,6 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, vector_t
 
 rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser);
 
-vector_t rac0a_parse_program(const char* input);
+vector_t rac0a_parse_program(const string_t input);
 
 #endif
