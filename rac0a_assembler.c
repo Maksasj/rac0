@@ -72,9 +72,8 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
             vector_push(&first_pass_left, statement);
             first_pass_pc += sizeof(rac0_value_t);
         } else  if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
-            // vector_push(&first_pass_left, statement);
-            // first_pass_pc += 
-            PLUM_LOG(PLUM_WARNING, "Not implemented");
+            vector_push(&first_pass_left, statement);
+            first_pass_pc += statement->as.byte_def.size; 
         } else  {
             PLUM_LOG(PLUM_WARNING, "Unreachable");
         }
@@ -146,12 +145,18 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
         } else  if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
             rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
             info->pointer = rac0a_assembler_program_get_pc(&assembler);
-            info->label = rac0a_string_copy(statement->as.label.label);
+            info->label = rac0a_string_copy(statement->as.word_def.label);
             vector_push(&labels, info);
 
             rac0a_assembler_program_push_word(&assembler, statement->as.word_def.value);
         } else  if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
-
+            rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
+            info->pointer = rac0a_assembler_program_get_pc(&assembler);
+            info->label = rac0a_string_copy(statement->as.byte_def.label);
+            vector_push(&labels, info);
+            
+            for(int i = 0; i < statement->as.byte_def.size; ++i)
+                rac0a_assembler_program_push_byte(&assembler, statement->as.byte_def.array[i]);
         } else  {
             PLUM_LOG(PLUM_WARNING, "Unreachable");
         }

@@ -2,10 +2,9 @@
 #define RAC0A_LEXER_H
 
 #include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
 
 #include "rac0_base.h"
+#include "rac0_utils.h"
 
 // Lexer
 typedef enum {
@@ -50,12 +49,6 @@ typedef struct {
     rac0a_result_code_t code;
 } rac0a_lex_result_t;
 
-typedef unsigned char rac0a_boolean_t;
-
-char* rac0a_string_copy(const char* input);
-
-char* rac0a_string_copy_len(const char* input, unsigned long long size);
-
 // lexer
 void rac0a_free_token(rac0a_token_t token);
 
@@ -92,8 +85,6 @@ rac0a_lex_result_t rac0a_lex_rbracket(rac0a_token_t* token, rac0a_lexer_t* lexer
 rac0a_lex_result_t rac0a_lex_percent(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
 rac0a_lex_result_t rac0a_lex_ampersand(rac0a_token_t* token, rac0a_lexer_t* lexer);
-
-rac0a_boolean_t rac0a_in_range_include(char value, char min, char max);
 
 rac0a_lex_result_t rac0a_lex_comment(rac0a_token_t* token, rac0a_lexer_t* lexer);
 

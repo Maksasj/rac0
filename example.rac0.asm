@@ -14,7 +14,8 @@
 
     data:
         some_const dw 0x69
- 
+        message db "Hello world !"
+
     code:
         pusha $zero
 

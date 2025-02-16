@@ -349,10 +349,12 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     return (rac0a_parse_result_t) { RAC0A_ERROR };
 }
 
-rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser) {
+rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL).code != RAC0A_OK) {
+    rac0a_token_t label;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -362,10 +364,16 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_STRING, NULL).code != RAC0A_OK) {
+    rac0a_token_t token;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_STRING, &token).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
+
+    value->label = label.lexeme;
+    value->array = token.lexeme;
+    value->size = strlen(token.lexeme);
     
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
@@ -404,6 +412,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
         rac0a_hl_instruction_statement_t inst;
         rac0a_hl_label_statement_t label;
         rac0a_hl_word_def_statement_t word_def;
+        rac0a_hl_byte_def_statement_t byte_def;
 
         if(rac0a_parse_include_statement(parser).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Include definition");        
@@ -433,11 +442,12 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             st->as.label = label;
 
             vector_push(&parser->hl_statements, st);
-        } else if(rac0a_parse_byte_definition(parser).code == RAC0A_OK) {
+        } else if(rac0a_parse_byte_definition(parser, &byte_def).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Byte definition");
 
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
             st->type = RAC0A_HL_TYPE_BYTE_DEF;
+            st->as.byte_def = byte_def;
             vector_push(&parser->hl_statements, st);
         } else if(rac0a_parse_word_definition(parser, &word_def).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Word definition");
@@ -447,7 +457,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             st->as.word_def = word_def;
 
             vector_push(&parser->hl_statements, st);
-        } else if(rac0a_parse_module(parser).code == RAC0A_OK) {
+        } else if(rac0a_parse_module_definition(parser).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Module usage");
         } else if(rac0a_parse_constblock_usage(parser).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Constblock usage");
@@ -497,7 +507,7 @@ rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser) {
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-rac0a_parse_result_t rac0a_parse_module(rac0a_parser_t* parser) {
+rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
     rac0a_lexer_t backup = parser->lexer;
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_AT, NULL).code != RAC0A_OK) {

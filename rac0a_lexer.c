@@ -1,27 +1,10 @@
 #include "rac0a_lexer.h"
 
-char* rac0a_string_copy(const char* input) {
-    unsigned long long len = strlen(input) + 1;
-    char* out =  malloc(sizeof(char) * len);
-    memcpy(out, input, len);
-    return out;
-}
-
-char* rac0a_string_copy_len(const char* input, unsigned long long size) {
-    unsigned long long len = size + 1;
-    char* out =  calloc(len, sizeof(char));
-    memcpy(out, input, len);
-    return out;
-}
-
 // lexer
 void rac0a_free_token(rac0a_token_t token) {
     if(token.lexeme != NULL)
         free(token.lexeme);
 }
-
-void rac0a_skip_whitespace(rac0a_lexer_t* lexer);
-rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer);
 
 // lexer
 void rac0a_skip_whitespace(rac0a_lexer_t* lexer) {
@@ -235,10 +218,6 @@ rac0a_lex_result_t rac0a_lex_ampersand(rac0a_token_t* token, rac0a_lexer_t* lexe
     lexer->pointer++;
 
     return (rac0a_lex_result_t) { RAC0A_OK };
-}
-
-rac0a_boolean_t rac0a_in_range_include(char value, char min, char max) {
-    return (value >= min) && (value <= max); 
 }
 
 rac0a_lex_result_t rac0a_lex_comment(rac0a_token_t* token, rac0a_lexer_t* lexer) {

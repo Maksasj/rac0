@@ -74,6 +74,13 @@ typedef struct {
 } rac0a_hl_word_def_statement_t;
 
 typedef struct {
+    char* label;
+    
+    rac0_byte_t* array;
+    rac0_value_t size;
+} rac0a_hl_byte_def_statement_t;
+
+typedef struct {
     rac0a_hl_statement_type_t type;
 
     union {
@@ -81,8 +88,7 @@ typedef struct {
         rac0a_hl_label_statement_t label;
         rac0a_hl_instruction_statement_t instruction;
         rac0a_hl_word_def_statement_t word_def;
-
-        int byte_def;
+        rac0a_hl_byte_def_statement_t byte_def;
     } as;
 } rac0a_hl_statement_t;
 
@@ -92,6 +98,7 @@ typedef struct {
 
 typedef struct {
     rac0a_lexer_t lexer;
+
     vector_t hl_statements;
 } rac0a_parser_t;
 
@@ -121,7 +128,7 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const c
 
 rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_instruction_statement_t* inst);
 
-rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value);
 
 rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser);
 
@@ -129,7 +136,7 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
 
 rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser);
 
-rac0a_parse_result_t rac0a_parse_module(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser);
 
 vector_t rac0a_parse_program(const char* input);
 

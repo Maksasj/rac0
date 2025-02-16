@@ -82,3 +82,21 @@ char* rac0_utils_read_file_string(char* file_name) {
 
     return source;
 }
+
+char* rac0a_string_copy(const char* input) {
+    unsigned long long len = strlen(input) + 1;
+    char* out =  malloc(sizeof(char) * len);
+    memcpy(out, input, len);
+    return out;
+}
+
+char* rac0a_string_copy_len(const char* input, unsigned long long size) {
+    unsigned long long len = size + 1;
+    char* out =  calloc(len, sizeof(char));
+    memcpy(out, input, len);
+    return out;
+}
+
+rac0a_boolean_t rac0a_in_range_include(char value, char min, char max) {
+    return (value >= min) && (value <= max); 
+}
