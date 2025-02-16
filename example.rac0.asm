@@ -6,8 +6,8 @@
     @constval other 0xFFFFAAAAFFFFAAAA
 
     @constblock push2() {
-        pusha $one
-        pusha $one
+        pusha $other
+        pusha $other
     }
   
     $push2()

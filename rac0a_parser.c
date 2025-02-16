@@ -13,6 +13,8 @@ rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_
         if(token.type == type) {
             if(ret != NULL)
                 *ret = token;
+            else
+                rac0a_free_token(token);
 
             return (rac0a_parse_result_t) { RAC0A_OK };
         }
@@ -101,16 +103,17 @@ rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac
     rac0_value_t value;
     if(rac0a_parse_number(parser, &value).code != RAC0A_OK) {
         parser->lexer = backup;
+        rac0a_free_token(token);
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
     constval->value = value;
-    constval->label = token.lexeme;
+    constval->label = rac0a_string_copy(token.lexeme);
 
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser) {
+rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, rac0a_hl_constblock_statement_t* block) {
     rac0a_lexer_t backup = parser->lexer;
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_AT, NULL).code != RAC0A_OK) {
@@ -123,7 +126,9 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, NULL).code != RAC0A_OK) {
+    rac0a_token_t token;
+
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -143,8 +148,10 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    // statement list should be included inside const block itself
-    if(rac0a_parse_statement_list(parser).code != RAC0A_OK) {
+    vector_t constblock_statements;
+    create_vector(&constblock_statements, 100);
+
+    if(rac0a_parse_statement_list(parser, &constblock_statements).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -154,10 +161,11 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
+    block->label = rac0a_string_copy(token.lexeme);
+    block->statements = constblock_statements;
+
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
-
-
 
 rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_hl_label_statement_t* label) {
     rac0a_lexer_t backup = parser->lexer;
@@ -182,13 +190,6 @@ rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_
 rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser) {
     return rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL);
 }
-
-/*
-Value can be:
-- number
-- constval
-- pointer
-*/
 
 rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* value) {
     rac0a_token_t token;
@@ -406,8 +407,9 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
+rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, vector_t* list) {
     while(1) {
+        rac0a_hl_constblock_statement_t constblock;
         rac0a_hl_constval_statement_t constval;
         rac0a_hl_instruction_statement_t inst;
         rac0a_hl_label_statement_t label;
@@ -423,17 +425,15 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             st->type = RAC0A_HL_TYPE_CONSTVAL_DECL;
             st->as.constval = constval;
             
-            vector_push(&parser->hl_statements, st);
-        } else if(rac0a_parse_constblock_definition(parser).code == RAC0A_OK) {
+            vector_push(list, st);
+        } else if(rac0a_parse_constblock_definition(parser, &constblock).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Constblock definition");
 
-            /*
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-            st->type = RAC0A_HL_TYPE_CONSTVAL_DECL;
-            st->as.constval = constval;
+            st->type = RAC0A_HL_TYPE_CONSTBLOCK_DECL;
+            st->as.constblock = constblock;
             
             vector_push(&parser->hl_statements, st);
-            */
         } else if(rac0a_parse_label_definition(parser, &label).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Label definition");
             
@@ -441,14 +441,14 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             st->type = RAC0A_HL_TYPE_LABEL;
             st->as.label = label;
 
-            vector_push(&parser->hl_statements, st);
+            vector_push(list, st);
         } else if(rac0a_parse_byte_definition(parser, &byte_def).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Byte definition");
 
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
             st->type = RAC0A_HL_TYPE_BYTE_DEF;
             st->as.byte_def = byte_def;
-            vector_push(&parser->hl_statements, st);
+            vector_push(list, st);
         } else if(rac0a_parse_word_definition(parser, &word_def).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Word definition");
 
@@ -456,7 +456,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             st->type = RAC0A_HL_TYPE_WORD_DEF;
             st->as.word_def = word_def;
 
-            vector_push(&parser->hl_statements, st);
+            vector_push(list, st);
         } else if(rac0a_parse_module_definition(parser).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Module usage");
         } else if(rac0a_parse_constblock_usage(parser).code == RAC0A_OK) {
@@ -466,7 +466,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser) {
             st->type = RAC0A_HL_TYPE_INSTRUCTION;
             st->as.instruction = inst;
 
-            vector_push(&parser->hl_statements, st);
+            vector_push(list, st);
         } else if(rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL).code == RAC0A_OK) {
             --parser->lexer.pointer;
             break;
@@ -530,7 +530,7 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    if(rac0a_parse_statement_list(parser).code != RAC0A_OK) {
+    if(rac0a_parse_statement_list(parser, &parser->hl_statements).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
@@ -556,7 +556,7 @@ vector_t rac0a_parse_program(const char* input) {
     while(1) {
         if(rac0a_parse_eof(&parser).code == RAC0A_OK) {
             break;
-        } else if(rac0a_parse_statement_list(&parser).code == RAC0A_OK) {
+        } else if(rac0a_parse_statement_list(&parser, &parser.hl_statements).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Statement list");
             continue;
         } else {

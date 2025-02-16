@@ -1,12 +1,10 @@
 #include "rac0a_lexer.h"
 
-// lexer
 void rac0a_free_token(rac0a_token_t token) {
     if(token.lexeme != NULL)
         free(token.lexeme);
 }
 
-// lexer
 void rac0a_skip_whitespace(rac0a_lexer_t* lexer) {
     while (isspace(lexer->input[lexer->pointer]))
         lexer->pointer++;

@@ -8,14 +8,16 @@
 
 typedef enum {
     RAC0A_HL_TYPE_CONSTVAL_DECL = 0,
-    RAC0A_HL_TYPE_LABEL = 1,
-    RAC0A_HL_TYPE_INSTRUCTION = 2,
-    RAC0A_HL_TYPE_WORD_DEF = 3,
-    RAC0A_HL_TYPE_BYTE_DEF = 4,
+    RAC0A_HL_TYPE_CONSTBLOCK_DECL = 1,
+    RAC0A_HL_TYPE_LABEL = 2,
+    RAC0A_HL_TYPE_INSTRUCTION = 3,
+    RAC0A_HL_TYPE_WORD_DEF = 4,
+    RAC0A_HL_TYPE_BYTE_DEF = 5,
 } rac0a_hl_statement_type_t;
 
 static char* RAC0A_HL_STRING[] = {
     "CONSTVAL",
+    "CONSTBLOCK",
     "LABEL",
     "INSTRUCTION",
     "WORD_DEF",
@@ -26,6 +28,11 @@ typedef struct {
     char* label;
     rac0_value_t value;
 } rac0a_hl_constval_statement_t;
+
+typedef struct {
+    char* label;
+    vector_t statements;
+} rac0a_hl_constblock_statement_t;
 
 typedef struct {
     char* label;
@@ -85,6 +92,7 @@ typedef struct {
 
     union {
         rac0a_hl_constval_statement_t constval;
+        rac0a_hl_constblock_statement_t constblock;
         rac0a_hl_label_statement_t label;
         rac0a_hl_instruction_statement_t instruction;
         rac0a_hl_word_def_statement_t word_def;
@@ -103,10 +111,11 @@ typedef struct {
 } rac0a_parser_t;
 
 rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_t type, rac0a_token_t* ret);
-
 rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const char* lexem);
 
 rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser);
+
+rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, rac0a_hl_constblock_statement_t* block);
 
 rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac0a_hl_constval_statement_t* constval);
 
@@ -134,7 +143,7 @@ rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser);
 
 rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_hl_word_def_statement_t* value);
 
-rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, vector_t* list);
 
 rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser);
 
