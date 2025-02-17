@@ -33,55 +33,52 @@ rac0_value_t rac0a_assembler_program_get_pc(rac0a_assembler_t* assembler) {
     return assembler->program.size;
 }
 
-byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
-    rac0a_assembler_t assembler;
-    create_byte_vector(&assembler.program, 1000);
-
-    // first pass we collect all labels and constvalues
-    vector_t labels;
-    create_vector(&labels, 100);
-
-    vector_t constvalues;
-    create_vector(&constvalues, 100);
-
-    vector_t first_pass_left;
-    create_vector(&first_pass_left, 100);
+rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* input, vector_t* constvalues, vector_t* labels) {
+    rac0a_hl_statement_list_t result;
+    create_vector(&result, 100);
     
-    rac0_u64_t first_pass_pc = 0;
+    rac0_u64_t pc = 0;
 
     PLUM_LOG(PLUM_INFO, "Running first assembler pass");
-    for(int i = 0; i < vector_size(hl_statements); ++i) {
-        rac0a_hl_statement_t* statement = vector_get(hl_statements, i);
+    for(int i = 0; i < vector_size(input); ++i) {
+        rac0a_hl_statement_t* statement = vector_get(input, i);
 
         PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
 
         if(statement->type == RAC0A_HL_TYPE_CONSTVAL_DECL) {
+            // todo free statement
             rac0a_constval_hl_info_t* info = (rac0a_constval_hl_info_t*) malloc(sizeof(rac0a_constval_hl_info_t));
             info->value = statement->as.constval.value;
             info->label = rac0a_string_copy(statement->as.constval.label);
-            vector_push(&constvalues, info);
+            vector_push(constvalues, info);
         } else  if(statement->type == RAC0A_HL_TYPE_LABEL) {
+            // todo free statement
             rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
-            info->pointer = first_pass_pc;
+            info->pointer = pc;
             info->label = rac0a_string_copy(statement->as.label.label);
-            vector_push(&labels, info);
+            vector_push(labels, info);
         } else  if(statement->type == RAC0A_HL_TYPE_INSTRUCTION) {
-            vector_push(&first_pass_left, statement);
-            first_pass_pc += sizeof(rac0_inst_t);
+            vector_push(&result, statement);
+            pc += sizeof(rac0_inst_t);
         } else  if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
-            vector_push(&first_pass_left, statement);
-            first_pass_pc += sizeof(rac0_value_t);
+            vector_push(&result, statement);
+            pc += sizeof(rac0_value_t);
         } else  if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
-            vector_push(&first_pass_left, statement);
-            first_pass_pc += statement->as.byte_def.size; 
+            vector_push(&result, statement);
+            pc += statement->as.byte_def.size; 
         } else  {
             PLUM_LOG(PLUM_WARNING, "Unreachable");
         }
     }
 
+    return result;
+}
+
+void rac0a_assemble_run_2_pass(rac0a_assembler_t* assembler, rac0a_hl_statement_list_t* input, vector_t* constvalues, vector_t* labels) {
     PLUM_LOG(PLUM_INFO, "Running second assembler pass");
-    for(int i = 0; i < vector_size(&first_pass_left); ++i) {
-        rac0a_hl_statement_t* statement = vector_get(&first_pass_left, i);
+    
+    for(int i = 0; i < vector_size(input); ++i) {
+        rac0a_hl_statement_t* statement = vector_get(input, i);
 
         PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
 
@@ -108,8 +105,8 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
             } else if(hl_instruction.value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
                 int found = 0;
 
-                for(int i = 0; i < vector_size(&constvalues); ++i) {
-                    rac0a_constval_hl_info_t* label_info = vector_get(&constvalues, i);
+                for(int i = 0; i < vector_size(constvalues); ++i) {
+                    rac0a_constval_hl_info_t* label_info = vector_get(constvalues, i);
                     
                     if(strcmp(hl_instruction.value.as.label, label_info->label) == 0) {
                         instruction.value = label_info->value;
@@ -125,8 +122,8 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
             } else if(hl_instruction.value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
                 int found = 0;
 
-                for(int i = 0; i < vector_size(&labels); ++i) {
-                    rac0a_label_hl_info_t* label_info = vector_get(&labels, i);
+                for(int i = 0; i < vector_size(labels); ++i) {
+                    rac0a_label_hl_info_t* label_info = vector_get(labels, i);
                     
                     if(strcmp(hl_instruction.value.as.label, label_info->label) == 0) {
                         instruction.value = label_info->pointer;
@@ -141,26 +138,43 @@ byte_vector_t rac0a_assemble_program(vector_t* hl_statements) {
                 PLUM_LOG(PLUM_WARNING, "Unreachable");
             }
 
-            rac0a_assembler_program_push_instruction(&assembler, instruction);
+            rac0a_assembler_program_push_instruction(assembler, instruction);
         } else  if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
             rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
-            info->pointer = rac0a_assembler_program_get_pc(&assembler);
+            info->pointer = rac0a_assembler_program_get_pc(assembler);
             info->label = rac0a_string_copy(statement->as.word_def.label);
-            vector_push(&labels, info);
+            vector_push(labels, info);
 
-            rac0a_assembler_program_push_word(&assembler, statement->as.word_def.value);
+            rac0a_assembler_program_push_word(assembler, statement->as.word_def.value);
         } else  if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
             rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
-            info->pointer = rac0a_assembler_program_get_pc(&assembler);
+            info->pointer = rac0a_assembler_program_get_pc(assembler);
             info->label = rac0a_string_copy(statement->as.byte_def.label);
-            vector_push(&labels, info);
+            vector_push(labels, info);
             
             for(int i = 0; i < statement->as.byte_def.size; ++i)
-                rac0a_assembler_program_push_byte(&assembler, statement->as.byte_def.array[i]);
+                rac0a_assembler_program_push_byte(assembler, statement->as.byte_def.array[i]);
         } else  {
             PLUM_LOG(PLUM_WARNING, "Unreachable");
         }
     }
+}
+
+byte_vector_t rac0a_assemble_program(rac0a_hl_statement_list_t* hl_statements) {
+    rac0a_assembler_t assembler;
+    create_byte_vector(&assembler.program, 1000);
+
+    // first pass we collect all labels and constvalues
+    vector_t labels;
+    create_vector(&labels, 100);
+
+    vector_t constvalues;
+    create_vector(&constvalues, 100);
+
+    rac0a_hl_statement_list_t pass1 = rac0a_assemble_run_1_pass(hl_statements, &constvalues, &labels);
+    rac0a_log_hl_statements("a.pass1.txt", &pass1);
+
+    rac0a_assemble_run_2_pass(&assembler, &pass1, &constvalues, &labels);
 
     for(int i = 0; i < vector_size(&labels); ++i) {
         rac0a_label_hl_info_t* info = vector_get(&labels, i);

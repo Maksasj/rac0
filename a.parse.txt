@@ -1,0 +1,18 @@
+[ 000000 ] [ INSTR ] JMPGA &code
+[ 000001 ] [ COVAL ] sys_device_0 0x0000000000000000
+[ 000002 ] [ COVAL ] sys_device_1 0x0000000000000001
+[ 000003 ] [ COVAL ] zero 0x0000000000000000
+[ 000004 ] [ COVAL ] one 0x0000000000000001
+[ 000005 ] [ COVAL ] other 0xffffaaaaffffaaaa
+[ 000006 ] [ COBLO ]
+[ 000007 ] [ LABEL ] data
+[ 000008 ] [ WODEF ] 0x0000000000000069
+[ 000009 ] [ BYDEF ] "Hello world !"
+[ 000010 ] [ BYDEF ] ""
+[ 000011 ] [ LABEL ] code
+[ 000012 ] [ INSTR ] PUSHA $zero
+[ 000013 ] [ LABEL ] lo
+[ 000014 ] [ INSTR ] ADDAT $one
+[ 000015 ] [ INSTR ] PUSHDA $sys_device_0
+[ 000016 ] [ INSTR ] JMPGA &lo
+[ 000017 ] [ INSTR ] HALT 

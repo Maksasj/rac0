@@ -12,9 +12,11 @@ int main(int argc, char *argv[]) {
     if(source == NULL)
         return 1;
 
-    vector_t hl_statements = rac0a_parse_program(source);
+    rac0a_hl_statement_list_t hl_statements = rac0a_parse_program(source);
     PLUM_LOG(PLUM_INFO, "Parsed program");
     PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&hl_statements));
+
+    rac0a_log_hl_statements("a.parse.txt", &hl_statements);
 
     byte_vector_t program = rac0a_assemble_program(&hl_statements);
 

@@ -7,6 +7,7 @@
 
 #include "rac0_base.h"
 
+typedef char* string_t;
 typedef unsigned char rac0a_boolean_t;
 
 char* rac0_utils_read_file_bytes(char* file_name);

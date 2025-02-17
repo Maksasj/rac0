@@ -1,0 +1,9 @@
+[ 000000 ] [ INSTR ] JMPGA &code
+[ 000001 ] [ WODEF ] 0x0000000000000069
+[ 000002 ] [ BYDEF ] "Hello world !"
+[ 000003 ] [ BYDEF ] ""
+[ 000004 ] [ INSTR ] PUSHA $zero
+[ 000005 ] [ INSTR ] ADDAT $one
+[ 000006 ] [ INSTR ] PUSHDA $sys_device_0
+[ 000007 ] [ INSTR ] JMPGA &lo
+[ 000008 ] [ INSTR ] HALT 
