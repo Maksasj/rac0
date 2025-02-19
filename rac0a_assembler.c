@@ -128,6 +128,8 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
     for(int i = 0; i < vector_size(&constvalues); ++i)
         rac0a_free_constval_hl_info(vector_get(&constvalues, i));
 
+    free_vector(&constvalues);
+
     return result;
 }
 
@@ -208,6 +210,8 @@ rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* i
 
     for(int i = 0; i < vector_size(&labels); ++i)
         rac0a_free_label_hl_info(vector_get(&labels, i));
+
+    free_vector(&labels);
 
     return result;
 }
