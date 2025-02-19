@@ -142,17 +142,22 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
-    PLUM_LOG(PLUM_INFO, "Trying to include file");
+    PLUM_LOG(PLUM_INFO, "Trying to include file '%s'", include_path);
 
     string_t source = rac0_utils_read_file_string(include_path);
+        free(include_path);
 
-    vector_t child_hl = rac0a_parse_program(source);
+    if(source == NULL) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    rac0a_hl_statement_list_t child_hl = rac0a_parse_program(source);
 
     for(int i = 0; i < vector_size(&child_hl); ++i)
         vector_push(&parser->hl_statements, vector_get(&child_hl, i)); 
 
-    free_vector(&child_hl);
-    free(include_path);
+    free_vector(&child_hl); // we dont want to free child hl statements
 
     PLUM_LOG(PLUM_INFO, "Successfully to included file");
 
@@ -231,7 +236,7 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    vector_t constblock_statements;
+    rac0a_hl_statement_list_t constblock_statements;
     create_vector(&constblock_statements, 100);
 
     if(rac0a_parse_statement_list(parser, &constblock_statements).code != RAC0A_OK) {
@@ -244,8 +249,7 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
     if(rac0a_parse_r_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        free_vector(&constblock_statements);
-        // todo clear constblock statemsnts
+        rac0a_free_hl_statement_list(&constblock_statements);
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
 
@@ -492,7 +496,7 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, vector_t* list) {
+rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, rac0a_hl_statement_list_t* list) {
     while(1) {
         rac0a_hl_constblock_statement_t constblock;
         rac0a_hl_constval_statement_t constval;
@@ -628,7 +632,7 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
-vector_t rac0a_parse_program(const string_t input) {
+rac0a_hl_statement_list_t rac0a_parse_program(const string_t input) {
     rac0a_parser_t parser = {
         .lexer = (rac0a_lexer_t) {
             .input = input,

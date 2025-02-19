@@ -1,9 +1,80 @@
 #include "rac0a_hl.h"
 
+void rac0a_free_hl_constval_statement(rac0a_hl_constval_statement_t statement) {
+    // nothing
+}
+
+void rac0a_free_hl_constblock_statement(rac0a_hl_constblock_statement_t statement) {
+    free(statement.label);
+    rac0a_free_hl_statement_list(&statement.statements);
+}
+
+void rac0a_free_hl_label_statement(rac0a_hl_label_statement_t statement) {
+    free(statement.label);
+}
+
+void rac0a_free_hl_instruction_statement(rac0a_hl_instruction_statement_t statement) {
+    if(statement.inst.type == RAC0A_HL_INSTRUCTION_TYPE_OPCODE) {
+        // nothing
+    } else if(statement.inst.type == RAC0A_HL_INSTRUCTION_TYPE_CONSTLABEL) {
+        free(statement.inst.as.constlabel);
+    } else {
+        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_instruction_statement: instruction type is not implemented");
+    }
+
+    if(statement.value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
+        // nothing
+    } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
+        free(statement.value.as.label);
+    } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
+        free(statement.value.as.constval_label);
+    } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_NONE) {
+        // nothing
+    } else {
+        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_instruction_statement: instruction value is not implemented");
+    }
+}
+
+void rac0a_free_hl_word_def_statement(rac0a_hl_word_def_statement_t statement) {
+    free(statement.label);
+}
+
+void rac0a_free_hl_byte_def_statement(rac0a_hl_byte_def_statement_t statement) {
+    free(statement.label);
+    free(statement.array);
+}
+
+void rac0a_free_hl_statement(rac0a_hl_statement_t* statement) {
+    if(statement->type == RAC0A_HL_TYPE_CONSTVAL_DECL) {
+        rac0a_free_hl_constval_statement(statement->as.constval);
+    } else if(statement->type == RAC0A_HL_TYPE_CONSTBLOCK_DECL) {
+        rac0a_free_hl_constblock_statement(statement->as.constblock);
+    } else if(statement->type == RAC0A_HL_TYPE_LABEL) {
+        rac0a_free_hl_label_statement(statement->as.label);
+    } else if(statement->type == RAC0A_HL_TYPE_INSTRUCTION) {
+        rac0a_free_hl_instruction_statement(statement->as.instruction);
+    } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
+        rac0a_free_hl_word_def_statement(statement->as.word_def);
+    } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
+        rac0a_free_hl_byte_def_statement(statement->as.byte_def);
+    } else {
+        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_statement: hl statement type is not implemented");
+    }
+
+    free(statement);
+}
+
+void rac0a_free_hl_statement_list(rac0a_hl_statement_list_t* list) {
+    for(int i = 0; i < vector_size(list); ++i)
+        rac0a_free_hl_statement(vector_get(list, i));
+
+    free_vector(list);
+}
+
 void rac0a_log_hl_statements(string_t file_path, rac0a_hl_statement_list_t* list) {
     FILE *out_file = fopen(file_path, "w");
     rac0a_log_hl_statements_file(out_file, list);
-
+    fclose(out_file);
 }
 
 void rac0a_log_hl_statements_file(FILE* file, rac0a_hl_statement_list_t* list) {
@@ -39,7 +110,7 @@ void rac0a_log_hl_statements_file(FILE* file, rac0a_hl_statement_list_t* list) {
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {            
             fprintf(file, "[ %.6d ] [ BYDEF ] \"%s\"\n", i, statement->as.byte_def.array);
         } else {
-            PLUM_LOG(PLUM_ERROR, "Unreachable");
+            PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_log_hl_statements_file: hl statement type is not implemented");
         }
     }
 }

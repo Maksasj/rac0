@@ -29,9 +29,11 @@ typedef struct {
     rac0_value_t value;
 } rac0a_hl_constval_statement_t;
 
+typedef vector_t rac0a_hl_statement_list_t;
+
 typedef struct {
     char* label;
-    vector_t statements;
+    rac0a_hl_statement_list_t statements;
 } rac0a_hl_constblock_statement_t;
 
 typedef struct {
@@ -100,7 +102,15 @@ typedef struct {
     } as;
 } rac0a_hl_statement_t;
 
-typedef vector_t rac0a_hl_statement_list_t;
+void rac0a_free_hl_constval_statement(rac0a_hl_constval_statement_t statement);
+void rac0a_free_hl_constblock_statement(rac0a_hl_constblock_statement_t statement);
+void rac0a_free_hl_label_statement(rac0a_hl_label_statement_t statement);
+void rac0a_free_hl_instruction_statement(rac0a_hl_instruction_statement_t statement);
+void rac0a_free_hl_word_def_statement(rac0a_hl_word_def_statement_t statement);
+void rac0a_free_hl_byte_def_statement(rac0a_hl_byte_def_statement_t statement);
+
+void rac0a_free_hl_statement(rac0a_hl_statement_t* statement);
+void rac0a_free_hl_statement_list(rac0a_hl_statement_list_t* list);
 
 void rac0a_log_hl_statements(string_t file_path, rac0a_hl_statement_list_t* list);
 void rac0a_log_hl_statements_file(FILE* file, rac0a_hl_statement_list_t* list);
