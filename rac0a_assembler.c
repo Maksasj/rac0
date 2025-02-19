@@ -1,6 +1,60 @@
 #include "rac0a_assembler.h"
 
-void rac0a_assembler_program_push_instruction(byte_vector_t* vector, rac0_inst_t inst) {
+rac0a_constval_hl_info_t* rac0a_create_constval_hl_info(const string_t label, rac0_value_t value) {
+    rac0a_constval_hl_info_t* info = (rac0a_constval_hl_info_t*) malloc(sizeof(rac0a_constval_hl_info_t));
+
+    info->label = rac0a_string_copy(label);
+    info->value = value;
+
+    return info;
+}
+
+void rac0a_free_constval_hl_info(rac0a_constval_hl_info_t* info) {
+    free(info->label);
+    free(info);
+}
+
+rac0a_constval_hl_info_t* rac0a_get_constval_hl_info(vector_t* container, const string_t label) {
+    for(int i = 0; i < vector_size(container); ++i) {
+        rac0a_constval_hl_info_t* label_info = vector_get(container, i);
+                    
+        if(strcmp(label, label_info->label) != 0)
+            continue;
+
+        return label_info;
+    }
+
+    return NULL; 
+}
+
+rac0a_label_hl_info_t* rac0a_create_label_hl_info(const string_t label, rac0_value_t pointer) {
+    rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
+
+    info->label = rac0a_string_copy(label);
+    info->pointer = pointer;
+
+    return info;
+}
+
+void rac0a_free_label_hl_info(rac0a_label_hl_info_t* info) {
+    free(info->label);
+    free(info);
+}
+
+rac0a_label_hl_info_t* rac0a_get_label_hl_info(vector_t* container, const string_t label) {
+    for(int i = 0; i < vector_size(container); ++i) {
+        rac0a_label_hl_info_t* label_info = vector_get(container, i);
+                    
+        if(strcmp(label, label_info->label) != 0)
+            continue;
+
+        return label_info;
+    }
+
+    return NULL; 
+}
+
+void rac0a_byte_vector_push_instruction(byte_vector_t* vector, rac0_inst_t inst) {
     byte_vector_push16(vector, inst.opcode);
     byte_vector_push64(vector, inst.value);
 }
@@ -17,10 +71,7 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
         rac0a_hl_statement_t* statement = vector_get(input, i);
 
         if(statement->type == RAC0A_HL_TYPE_CONSTVAL_DECL) {
-            rac0a_constval_hl_info_t* info = (rac0a_constval_hl_info_t*) malloc(sizeof(rac0a_constval_hl_info_t));
-            info->value = statement->as.constval.value;
-            info->label = rac0a_string_copy(statement->as.constval.label);
-            vector_push(&constvalues, info);
+            vector_push(&constvalues, rac0a_create_constval_hl_info(statement->as.constval.label, statement->as.constval.value));
 
             rac0a_free_hl_statement(statement);
         } else if(statement->type == RAC0A_HL_TYPE_CONSTBLOCK_DECL) {
@@ -54,21 +105,14 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
 
             if(hl_instruction->value.type == RAC0A_HL_VALUE_TYPE_NONE) {
             } else if(hl_instruction->value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
-                int found = 0;
+                rac0a_constval_hl_info_t* info = rac0a_get_constval_hl_info(&constvalues, hl_instruction->value.as.constval_label);
 
-                for(int i = 0; i < vector_size(&constvalues); ++i) {
-                    rac0a_constval_hl_info_t* label_info = vector_get(&constvalues, i);
-                    
-                    if(strcmp(hl_instruction->value.as.constval_label, label_info->label) == 0) {
-                        hl_instruction->value.as.value = label_info->value;
-                        hl_instruction->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
-                        ++found;
-                        break;
-                    }
-                } 
-
-                if(!found)
+                if(info == NULL)
                     PLUM_LOG(PLUM_ERROR, "Constval with '%s' name is not defined", hl_instruction->value.as.constval_label);
+                else {
+                    hl_instruction->value.as.value = info->value;
+                    hl_instruction->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
+                }
             } else if(hl_instruction->value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
             } else if(hl_instruction->value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
             } else {
@@ -80,6 +124,9 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
             PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_assemble_run_1_pass: hl statement type is not implemented");
         }
     }
+
+    for(int i = 0; i < vector_size(&constvalues); ++i)
+        rac0a_free_constval_hl_info(vector_get(&constvalues, i));
 
     return result;
 }
@@ -103,29 +150,18 @@ rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* i
         } else if(statement->type == RAC0A_HL_TYPE_CONSTBLOCK_DECL) {
 
         } else if(statement->type == RAC0A_HL_TYPE_LABEL) {
-            rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
-            info->pointer = pc;
-            info->label = rac0a_string_copy(statement->as.label.label);
-            vector_push(&labels, info);
-
+            vector_push(&labels, rac0a_create_label_hl_info(statement->as.label.label, pc));
             rac0a_free_hl_statement(statement);
         } else if(statement->type == RAC0A_HL_TYPE_INSTRUCTION) {
             vector_push(&result, statement);
 
             pc += sizeof(rac0_inst_t);
         } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
-            rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
-            info->pointer = pc;
-            info->label = rac0a_string_copy(statement->as.word_def.label);
-            vector_push(&labels, info);
+            vector_push(&labels, rac0a_create_label_hl_info(statement->as.label.label, pc));
             vector_push(&result, statement);
-
             pc += sizeof(rac0_value_t);
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
-            rac0a_label_hl_info_t* info = (rac0a_label_hl_info_t*) malloc(sizeof(rac0a_label_hl_info_t));
-            info->pointer = pc;
-            info->label = rac0a_string_copy(statement->as.byte_def.label);
-            vector_push(&labels, info);
+            vector_push(&labels, rac0a_create_label_hl_info(statement->as.label.label, pc));
             vector_push(&result, statement);
 
             pc += statement->as.byte_def.size; 
@@ -150,21 +186,14 @@ rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* i
             } else if(hl_instruction->value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
             } else if(hl_instruction->value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
             } else if(hl_instruction->value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
-                int found = 0;
+                rac0a_label_hl_info_t* info = rac0a_get_label_hl_info(&labels, hl_instruction->value.as.label);
 
-                for(int i = 0; i < vector_size(&labels); ++i) {
-                    rac0a_label_hl_info_t* label_info = vector_get(&labels, i);
-                    
-                    if(strcmp(hl_instruction->value.as.label, label_info->label) == 0) {
-                        hl_instruction->value.as.value = label_info->pointer;
-                        hl_instruction->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
-                        ++found;
-                        break;
-                    }
-                } 
-
-                if(!found)
+                if(info == NULL)
                     PLUM_LOG(PLUM_ERROR, "Label with '%s' name is not defined", hl_instruction->value.as.label);
+                else {
+                    hl_instruction->value.as.value = info->pointer;
+                    hl_instruction->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
+                }
             } else {
                 PLUM_LOG(PLUM_ERROR, "Unreachable");
             }
@@ -176,6 +205,9 @@ rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* i
             PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_assemble_run_2_pass: hl statement type is not implemented");
         }
     }
+
+    for(int i = 0; i < vector_size(&labels); ++i)
+        rac0a_free_label_hl_info(vector_get(&labels, i));
 
     return result;
 }
@@ -219,7 +251,7 @@ byte_vector_t rac0a_assemble_run_final_pass(rac0a_hl_statement_list_t* input) {
                 PLUM_LOG(PLUM_ERROR, "Unreachable");
             }
 
-            rac0a_assembler_program_push_instruction(&result, instruction);
+            rac0a_byte_vector_push_instruction(&result, instruction);
         } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
             byte_vector_push64(&result, statement->as.word_def.value);
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {

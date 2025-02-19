@@ -8,12 +8,22 @@ typedef struct {
     rac0_value_t value;
 } rac0a_constval_hl_info_t;
 
+rac0a_constval_hl_info_t* rac0a_create_constval_hl_info(const string_t label, rac0_value_t value);
+void rac0a_free_constval_hl_info(rac0a_constval_hl_info_t* info);
+
+rac0a_constval_hl_info_t* rac0a_get_constval_hl_info(vector_t* container, const string_t label);
+
 typedef struct {
     char* label;
     rac0_value_t pointer;
 } rac0a_label_hl_info_t;
 
-void rac0a_assembler_program_push_instruction(byte_vector_t* vector, rac0_inst_t inst);
+rac0a_label_hl_info_t* rac0a_create_label_hl_info(const string_t label, rac0_value_t pointer);
+void rac0a_free_label_hl_info(rac0a_label_hl_info_t* info);
+
+rac0a_label_hl_info_t* rac0a_get_label_hl_info(vector_t* container, const string_t label);
+
+void rac0a_byte_vector_push_instruction(byte_vector_t* vector, rac0_inst_t inst);
 
 rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* input);
 rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* input);
