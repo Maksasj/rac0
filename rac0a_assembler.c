@@ -5,10 +5,6 @@ void rac0a_assembler_program_push_instruction(byte_vector_t* vector, rac0_inst_t
     byte_vector_push64(vector, inst.value);
 }
 
-rac0_value_t rac0a_assembler_program_get_pc(rac0a_assembler_t* assembler) {
-    return assembler->program.size;
-}
-
 rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* input) {
     vector_t constvalues;
     create_vector(&constvalues, 100);
@@ -184,8 +180,10 @@ rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* i
     return result;
 }
 
+byte_vector_t rac0a_assemble_run_final_pass(rac0a_hl_statement_list_t* input) {
+    byte_vector_t result;
+    create_byte_vector(&result, 1000);
 
-void rac0a_assemble_run_3_pass(rac0a_assembler_t* assembler, rac0a_hl_statement_list_t* input) {
     for(int i = 0; i < vector_size(input); ++i) {
         rac0a_hl_statement_t* statement = vector_get(input, i);
 
@@ -221,22 +219,21 @@ void rac0a_assemble_run_3_pass(rac0a_assembler_t* assembler, rac0a_hl_statement_
                 PLUM_LOG(PLUM_ERROR, "Unreachable");
             }
 
-            rac0a_assembler_program_push_instruction(&assembler->program, instruction);
+            rac0a_assembler_program_push_instruction(&result, instruction);
         } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
-            byte_vector_push64(&assembler->program, statement->as.word_def.value);
+            byte_vector_push64(&result, statement->as.word_def.value);
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
             for(int i = 0; i < statement->as.byte_def.size; ++i)
-                byte_vector_push_byte(&assembler->program, statement->as.byte_def.array[i]);
+                byte_vector_push_byte(&result, statement->as.byte_def.array[i]);
         } else {
-            PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_assemble_run_3_pass: hl statement type is not implemented");
+            PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_assemble_run_final_pass: hl statement type is not implemented");
         }
     }
+
+    return result;
 }
 
 byte_vector_t rac0a_assemble_program(rac0a_hl_statement_list_t* hl_statements) {
-    rac0a_assembler_t assembler;
-    create_byte_vector(&assembler.program, 1000);
-
     // first pass we collect all labels and constvalues
     rac0a_hl_statement_list_t pass1 = rac0a_assemble_run_1_pass(hl_statements);
     rac0a_log_hl_statements("a.pass1.txt", &pass1);
@@ -245,7 +242,7 @@ byte_vector_t rac0a_assemble_program(rac0a_hl_statement_list_t* hl_statements) {
     rac0a_hl_statement_list_t pass2 = rac0a_assemble_run_2_pass(&pass1);
     rac0a_log_hl_statements("a.pass2.txt", &pass2);
 
-    rac0a_assemble_run_3_pass(&assembler, &pass2);
+    byte_vector_t final_pass = rac0a_assemble_run_final_pass(&pass2);
 
-    return assembler.program;
+    return final_pass;
 }
