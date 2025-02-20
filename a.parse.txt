@@ -1,4 +1,4 @@
-[ 000000 ] [ INSTR ] JMPGA &code
+[ 000000 ] [ INSTR ] JMPA &code
 [ 000001 ] [ COVAL ] sys_device_0 0x0000000000000000
 [ 000002 ] [ COVAL ] sys_device_1 0x0000000000000001
 [ 000003 ] [ COVAL ] zero 0x0000000000000000
@@ -13,6 +13,6 @@
 [ 000012 ] [ INSTR ] PUSHA $zero
 [ 000013 ] [ LABEL ] lo
 [ 000014 ] [ INSTR ] ADDAT $one
-[ 000015 ] [ INSTR ] PUSHDA $sys_device_0
-[ 000016 ] [ INSTR ] JMPGA &lo
+[ 000015 ] [ INSTR ] PUTDA $sys_device_0
+[ 000016 ] [ INSTR ] JMPA &lo
 [ 000017 ] [ INSTR ] HALT 

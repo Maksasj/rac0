@@ -1,4 +1,4 @@
-jmpga &code
+jmpa &code
 
 @module sys {
     @constval sys_device_0 0x0

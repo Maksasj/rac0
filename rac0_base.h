@@ -24,8 +24,11 @@ typedef rac0_u8_t rac0_byte_t;
 typedef rac0_u64_t rac0_value_t;
 typedef rac0_u16_t rac0_opcode_t;
 
+// cpu
 #define RAC0_HALT_OPCODE        ((rac0_opcode_t) 0)
+#define RAC0_WAIT_OPCODE        ((rac0_opcode_t) 22)
 
+// stack
 #define RAC0_PUSHA_OPCODE       ((rac0_opcode_t) 1)
 #define RAC0_PUSHPC_OPCODE      ((rac0_opcode_t) 2)
 #define RAC0_DUPT_OPCODE        ((rac0_opcode_t) 3)
@@ -33,26 +36,44 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_DROP_OPCODE        ((rac0_opcode_t) 5)
 #define RAC0_SWAP_OPCODE        ((rac0_opcode_t) 6)
 
+// memory
 #define RAC0_STORE_OPCODE       ((rac0_opcode_t) 7)
 #define RAC0_STOREA_OPCODE      ((rac0_opcode_t) 8)
 #define RAC0_LOAD_OPCODE        ((rac0_opcode_t) 9)
 #define RAC0_LOADA_OPCODE       ((rac0_opcode_t) 10)
 
+// arithmetic
 #define RAC0_ADD_OPCODE         ((rac0_opcode_t) 11)
 #define RAC0_ADDC_OPCODE        ((rac0_opcode_t) 12)
 #define RAC0_ADDAT_OPCODE       ((rac0_opcode_t) 13)
 #define RAC0_ADDAN_OPCODE       ((rac0_opcode_t) 14)
+// SUB
+// CMP
+// NEG
+// NOT
+// AND
+// OR
+// NAND
+// NOR
+// XOR
 
-#define RAC0_JMPGA_OPCODE       ((rac0_opcode_t) 15)
+// flow
+#define RAC0_JMPA_OPCODE       ((rac0_opcode_t) 15)
+// JMPT
+// JMPN
 
+// JZA
+// JNZA
+// JNEGA
+// JPOSA
+
+// device
 #define RAC0_SETDA_OPCODE       ((rac0_opcode_t) 16)
 #define RAC0_SETDT_OPCODE       ((rac0_opcode_t) 17)
-#define RAC0_POOLDA_OPCODE      ((rac0_opcode_t) 18)
-#define RAC0_POOLDT_OPCODE      ((rac0_opcode_t) 19)
-#define RAC0_PUSHDA_OPCODE      ((rac0_opcode_t) 20)
-#define RAC0_PUSHDT_OPCODE      ((rac0_opcode_t) 21)
-
-#define RAC0_WAIT_OPCODE        ((rac0_opcode_t) 22)
+#define RAC0_FETCHDA_OPCODE     ((rac0_opcode_t) 18)
+#define RAC0_FETCHDT_OPCODE     ((rac0_opcode_t) 19)
+#define RAC0_PUTDA_OPCODE       ((rac0_opcode_t) 20)
+#define RAC0_PUTDT_OPCODE       ((rac0_opcode_t) 21)
 
 typedef struct __attribute__((packed)) {
     rac0_opcode_t opcode;   // 16 bits | 2 bytes
@@ -79,14 +100,14 @@ static char* RAC0_OPCODE_STRING[] = {
     "ADDAT",
     "ADDAN",
 
-    "JMPGA",
+    "JMPA",
 
     "SETDA",
     "SETDT",
-    "POOLDA",
-    "POOLDT",
-    "PUSHDA",
-    "PUSHDT",
+    "FETCHDA",
+    "FETCHDT",
+    "PUTDA",
+    "PUTDT",
 
     "WAIT"
 };

@@ -136,7 +136,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_stack_push(&cpu->stack, next + inst.value);
         rac0_stack_push(&cpu->stack, top);
         goto inc;
-    } else if(inst.opcode == RAC0_JMPGA_OPCODE) {
+    } else if(inst.opcode == RAC0_JMPA_OPCODE) {
         cpu->pc = inst.value;
         goto cont;
     } else if(inst.opcode == RAC0_SETDA_OPCODE) {
@@ -146,16 +146,16 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         cpu->device = top;
         goto inc;
-    } else if(inst.opcode == RAC0_POOLDA_OPCODE) {
+    } else if(inst.opcode == RAC0_FETCHDA_OPCODE) {
         PLUM_LOG(PLUM_ERROR, "Opcode POOLDA is not implemented");
-    } else if(inst.opcode == RAC0_POOLDT_OPCODE) {
+    } else if(inst.opcode == RAC0_FETCHDT_OPCODE) {
         PLUM_LOG(PLUM_ERROR, "Opcode POOLDT is not implemented");
-    } else if(inst.opcode == RAC0_PUSHDA_OPCODE) {
+    } else if(inst.opcode == RAC0_PUTDA_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_device_t device = devices[cpu->device];
         (*device.push)(device.device_data, inst.value, top);
         goto inc;
-    } else if(inst.opcode == RAC0_PUSHDT_OPCODE) {
+    } else if(inst.opcode == RAC0_PUTDT_OPCODE) {
         PLUM_LOG(PLUM_ERROR, "Opcode PUSHDT is not implemented");
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);

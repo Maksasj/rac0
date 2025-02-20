@@ -391,7 +391,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
         PLUM_LOG(PLUM_TRACE, "PUSHDA instruction definition");
 
         inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_PUSHDA_OPCODE;
+        inst->inst.as.opcode = RAC0_PUTDA_OPCODE;
         inst->value = value;
 
         return (rac0a_parse_result_t) { RAC0A_OK };
@@ -417,11 +417,11 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
-    if(rac0a_parse_instruction_arg(parser, "jmpga", &value).code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "JMPGA instruction definition");
+    if(rac0a_parse_instruction_arg(parser, "jmpa", &value).code == RAC0A_OK) {
+        PLUM_LOG(PLUM_TRACE, "JMPA instruction definition");
 
         inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_JMPGA_OPCODE;
+        inst->inst.as.opcode = RAC0_JMPA_OPCODE;
         inst->value = value;
 
         return (rac0a_parse_result_t) { RAC0A_OK };
