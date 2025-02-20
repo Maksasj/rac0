@@ -79,7 +79,7 @@ typedef struct {
 
 typedef struct {
     char* label;
-    rac0_value_t value;
+    rac0a_hl_value_t value;
 } rac0a_hl_word_def_statement_t;
 
 typedef struct {

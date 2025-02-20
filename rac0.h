@@ -49,11 +49,25 @@ void rac0_stack_drop(rac0_stack_t* stack) {
     --stack->top;
 }
 
+typedef enum {
+    RAC0_CPU_MODE_SYSTEM = 0,
+    RAC0_CPU_MODE_USER = 1
+} rac0_cpu_mode_t;
+
 typedef struct {
+    // stack
     rac0_stack_t stack;
-    rac0_u64_t pc;
-    rac0_u64_t device; 
-    rac0_byte_t halted;
+
+    // registers
+    rac0_value_t pc;
+    rac0_value_t device; 
+    rac0_value_t halted;
+
+    // idt
+    rac0_value_t idt; // pointer to interupt table
+    rac0_value_t iret; // interupt return pointer
+
+    rac0_value_t mode; // mode bit
 } rac0_cpu_t;
 
 typedef struct {    

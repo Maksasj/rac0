@@ -119,6 +119,24 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
                 PLUM_LOG(PLUM_ERROR, "Unreachable");
             }
         } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
+            rac0a_hl_word_def_statement_t* word_def = &statement->as.word_def;
+            
+            if(word_def->value.type == RAC0A_HL_VALUE_TYPE_NONE) {
+                PLUM_LOG(PLUM_ERROR, "Unreachable");
+            } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
+                rac0a_constval_hl_info_t* info = rac0a_get_constval_hl_info(&constvalues, word_def->value.as.constval_label);
+
+                if(info == NULL)
+                    PLUM_LOG(PLUM_ERROR, "Constval with '%s' name is not defined", word_def->value.as.constval_label);
+                else {
+                    word_def->value.as.value = info->value;
+                    word_def->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
+                }
+            } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
+            } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
+            } else {
+                PLUM_LOG(PLUM_ERROR, "Unreachable");
+            }
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
         } else {
             PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_assemble_run_1_pass: hl statement type is not implemented");
@@ -257,7 +275,23 @@ byte_vector_t rac0a_assemble_run_final_pass(rac0a_hl_statement_list_t* input) {
 
             rac0a_byte_vector_push_instruction(&result, instruction);
         } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
-            byte_vector_push64(&result, statement->as.word_def.value);
+            rac0a_hl_word_def_statement_t word_def = statement->as.word_def;
+
+            rac0_value_t value;
+
+            if(word_def.value.type == RAC0A_HL_VALUE_TYPE_NONE) {
+                // do nothing
+            } else if(word_def.value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
+                // do nothing
+            } else if(word_def.value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
+                value = word_def.value.as.value;
+            } else if(word_def.value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
+                // do nothing
+            } else {
+                PLUM_LOG(PLUM_ERROR, "Unreachable");
+            }
+
+            byte_vector_push64(&result, value);
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
             for(int i = 0; i < statement->as.byte_def.size; ++i)
                 byte_vector_push_byte(&result, statement->as.byte_def.array[i]);

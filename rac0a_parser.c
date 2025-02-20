@@ -376,27 +376,28 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
 
     rac0a_hl_value_t value;
 
+    // cpu
     if(rac0a_parse_instruction_noarg(parser, "halt").code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "HALT instruction definition");
 
         inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_HALT_OPCODE;
         inst->inst.as.opcode = RAC0_HALT_OPCODE;
         inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
         
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
-    if(rac0a_parse_instruction_arg(parser, "pushda", &value).code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "PUSHDA instruction definition");
+    if(rac0a_parse_instruction_noarg(parser, "wait").code == RAC0A_OK) {
+        PLUM_LOG(PLUM_TRACE, "WAIT instruction definition");
 
         inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_PUTDA_OPCODE;
-        inst->value = value;
-
+        inst->inst.as.opcode = RAC0_WAIT_OPCODE;
+        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
+        
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
+    // stack
     if(rac0a_parse_instruction_arg(parser, "pusha", &value).code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "PUSHA instruction definition");
 
@@ -407,6 +408,17 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
+    if(rac0a_parse_instruction_noarg(parser, "drop").code == RAC0A_OK) {
+        PLUM_LOG(PLUM_TRACE, "DROP instruction definition");
+
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_DROP_OPCODE;
+        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
+        
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    // arithmetic
     if(rac0a_parse_instruction_arg(parser, "addat", &value).code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "ADDAT instruction definition");
 
@@ -417,6 +429,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
+    // flow
     if(rac0a_parse_instruction_arg(parser, "jmpa", &value).code == RAC0A_OK) {
         PLUM_LOG(PLUM_TRACE, "JMPA instruction definition");
 
@@ -424,6 +437,38 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
         inst->inst.as.opcode = RAC0_JMPA_OPCODE;
         inst->value = value;
 
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    // device
+    if(rac0a_parse_instruction_arg(parser, "putda", &value).code == RAC0A_OK) {
+        PLUM_LOG(PLUM_TRACE, "PUTDA instruction definition");
+
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_PUTDA_OPCODE;
+        inst->value = value;
+
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    // interrupt
+    if(rac0a_parse_instruction_arg(parser, "int", &value).code == RAC0A_OK) {
+        PLUM_LOG(PLUM_TRACE, "INT instruction definition");
+
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_INT_OPCODE;
+        inst->value = value;
+
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    if(rac0a_parse_instruction_noarg(parser, "iret").code == RAC0A_OK) {
+        PLUM_LOG(PLUM_TRACE, "IRET instruction definition");
+
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
+        inst->inst.as.opcode = RAC0_IRET_OPCODE;
+        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
+        
         return (rac0a_parse_result_t) { RAC0A_OK };
     }
 
@@ -480,16 +525,13 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
         rac0a_free_token(label);
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
-
-    rac0_value_t number;
-
-    if(rac0a_parse_number(parser, &number).code != RAC0A_OK) {
+    
+    if(rac0a_parse_value(parser, &value->value).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
-    
-    value->value = number;
+
     value->label = rac0a_string_copy(label.lexeme);
     rac0a_free_token(label);
 

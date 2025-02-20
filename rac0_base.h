@@ -75,6 +75,10 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_PUTDA_OPCODE       ((rac0_opcode_t) 20)
 #define RAC0_PUTDT_OPCODE       ((rac0_opcode_t) 21)
 
+// interrupt
+#define RAC0_INT_OPCODE         ((rac0_opcode_t) 23)
+#define RAC0_IRET_OPCODE        ((rac0_opcode_t) 24)
+
 typedef struct __attribute__((packed)) {
     rac0_opcode_t opcode;   // 16 bits | 2 bytes
     rac0_value_t value;     // 64 bits | 8 bytes
@@ -109,7 +113,10 @@ static char* RAC0_OPCODE_STRING[] = {
     "PUTDA",
     "PUTDT",
 
-    "WAIT"
+    "WAIT",
+
+    "INT",
+    "IRET"
 };
 
 #endif

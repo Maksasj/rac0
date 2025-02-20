@@ -36,6 +36,18 @@ void rac0a_free_hl_instruction_statement(rac0a_hl_instruction_statement_t statem
 }
 
 void rac0a_free_hl_word_def_statement(rac0a_hl_word_def_statement_t statement) {
+    if(statement.value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
+        // nothing
+    } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
+        free(statement.value.as.label);
+    } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
+        free(statement.value.as.constval_label);
+    } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_NONE) {
+        // nothing
+    } else {
+        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_word_def_statement: instruction value is not implemented");
+    }
+
     free(statement.label);
 }
 
@@ -88,7 +100,7 @@ void rac0a_log_hl_statements_file(FILE* file, rac0a_hl_statement_list_t* list) {
         } else if(statement->type == RAC0A_HL_TYPE_LABEL) {
             fprintf(file, "[ %.6d ] [ LABEL ] %s\n", i, statement->as.label.label);
         } else if(statement->type == RAC0A_HL_TYPE_INSTRUCTION) {
-            fprintf(file, "[ %.6d ] [ INSTR ] ", i);\
+            fprintf(file, "[ %.6d ] [ INSTR ] ", i);
 
             if(statement->as.instruction.inst.type == RAC0A_HL_INSTRUCTION_TYPE_OPCODE) {
                 fprintf(file, "%s ", RAC0_OPCODE_STRING[statement->as.instruction.inst.as.opcode]);
@@ -106,7 +118,17 @@ void rac0a_log_hl_statements_file(FILE* file, rac0a_hl_statement_list_t* list) {
 
             fprintf(file, "\n");
         } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
-            fprintf(file, "[ %.6d ] [ WODEF ] 0x%.16llx\n", i, statement->as.word_def.value);
+            fprintf(file, "[ %.6d ] [ WODEF ] ", i);
+
+            if(statement->as.word_def.value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
+                fprintf(file, "0x%.16llx ", statement->as.word_def.value.as.value);
+            } else if(statement->as.word_def.value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
+                fprintf(file, "&%s", statement->as.word_def.value.as.label);
+            } else if(statement->as.word_def.value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
+                fprintf(file, "$%s", statement->as.word_def.value.as.constval_label);
+            }
+
+            fprintf(file, "\n");
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {            
             fprintf(file, "[ %.6d ] [ BYDEF ] \"%s\"\n", i, statement->as.byte_def.array);
         } else {

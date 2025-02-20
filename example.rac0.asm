@@ -23,6 +23,6 @@
         lo:        
             addat $one
             pushda $sys_device_0
-            jmpa &lo
+            jmpga &lo
             halt 
 }
