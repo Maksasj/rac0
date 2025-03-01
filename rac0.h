@@ -50,7 +50,7 @@ void rac0_stack_drop(rac0_stack_t* stack) {
 }
 
 typedef enum {
-    RAC0_CPU_MODE_SYSTEM = 0,
+    RAC0_CPU_MODE_KERNEL = 0,
     RAC0_CPU_MODE_USER = 1
 } rac0_cpu_mode_t;
 
