@@ -13,7 +13,6 @@ int_1:
     iret
 
 int_2:
-    addat 0x1
     putda $sys_device_0
     drop
     iret

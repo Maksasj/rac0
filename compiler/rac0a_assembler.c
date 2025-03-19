@@ -132,6 +132,7 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
                     word_def->value.as.value = info->value;
                     word_def->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
                 }
+
             } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
             } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
             } else {
@@ -218,7 +219,23 @@ rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* i
                 PLUM_LOG(PLUM_ERROR, "Unreachable");
             }
         } else if(statement->type == RAC0A_HL_TYPE_WORD_DEF) {
+            rac0a_hl_word_def_statement_t* word_def = &statement->as.word_def;
 
+            if(word_def->value.type == RAC0A_HL_VALUE_TYPE_NONE) {
+            } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_CONSTVAL) {
+            } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
+            } else if(word_def->value.type == RAC0A_HL_VALUE_TYPE_LABEL_POINTER) {
+                rac0a_label_hl_info_t* info = rac0a_get_label_hl_info(&labels, word_def->value.as.label);
+
+                if(info == NULL)
+                    PLUM_LOG(PLUM_ERROR, "Label with '%s' name is not defined", word_def->value.as.label);
+                else {
+                    word_def->value.as.value = info->pointer;
+                    word_def->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
+                }
+            } else {
+                PLUM_LOG(PLUM_ERROR, "Unreachable");
+            }
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
 
         } else {
