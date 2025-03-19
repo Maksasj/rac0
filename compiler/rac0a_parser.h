@@ -11,7 +11,20 @@
 
 typedef struct {
     rac0a_result_code_t code;
+
+    union {
+        struct {
+            const char* message;
+            rac0_u64_t pointer;
+        } error;
+        struct {
+
+        } ok;
+    } as;
 } rac0a_parse_result_t;
+
+rac0a_parse_result_t rac0a_parse_result_ok();
+rac0a_parse_result_t rac0a_parse_result_error(const char* message, rac0_u64_t pointer);
 
 typedef struct {
     rac0a_lexer_t lexer;

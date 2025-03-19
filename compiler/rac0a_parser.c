@@ -1,5 +1,18 @@
 #include "rac0a_parser.h"
 
+rac0a_parse_result_t rac0a_parse_result_ok() {
+    return (rac0a_parse_result_t) { RAC0A_OK };
+}
+rac0a_parse_result_t rac0a_parse_result_error(const char* message, rac0_u64_t pointer) {
+    return (rac0a_parse_result_t) { 
+        .code = RAC0A_ERROR, 
+        .as.error = {
+            .message = message,
+            .pointer = pointer,
+        }
+    };
+}
+
 // parsing utils
 rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_t type, rac0a_token_t* ret) {
     rac0a_lexer_t backup = parser->lexer;
@@ -17,7 +30,7 @@ rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_
             else
                 rac0a_free_token(token);
     
-            return (rac0a_parse_result_t) { RAC0A_OK };
+            return rac0a_parse_result_ok();
         }
 
         break;
@@ -25,7 +38,7 @@ rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_
 
     parser->lexer = backup;
     
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
+    return rac0a_parse_result_error("todo", 0);
 }
 
 rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const string_t lexem) {
@@ -34,18 +47,18 @@ rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const string
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
         
     if(strcmp(token.lexeme, lexem) != 0) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 // parsing shortcuts
@@ -81,10 +94,10 @@ rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* nu
     if(rac0a_parse_token(parser, RAC0A_TOKEN_NUMBER, &token).code == RAC0A_OK) {
         *number = strtoull(token.lexeme, NULL, 0);
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_OK };
+        return rac0a_parse_result_ok();
     }
 
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
+    return rac0a_parse_result_error("todo", 0);
 }
 
 rac0a_parse_result_t rac0a_parse_l_bracket(rac0a_parser_t* parser) {
@@ -104,10 +117,10 @@ rac0a_parse_result_t rac0a_parse_string(rac0a_parser_t* parser, string_t* string
     if(rac0a_parse_token(parser, RAC0A_TOKEN_STRING, &token).code == RAC0A_OK) {
         *string = rac0a_string_copy(token.lexeme);
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_OK };
+        return rac0a_parse_result_ok();
     }
 
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
+    return rac0a_parse_result_error("todo", 0);
 }
 
 rac0a_parse_result_t rac0a_parse_ampersand(rac0a_parser_t* parser) {
@@ -132,18 +145,18 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "include").code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     string_t include_path;
     if(rac0a_parse_string(parser, &include_path).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     PLUM_LOG(PLUM_INFO, "Trying to include file '%s'", include_path);
@@ -153,7 +166,7 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
 
     if(source == NULL) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_hl_statement_list_t child_hl = rac0a_parse_program(source);
@@ -165,7 +178,7 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
 
     PLUM_LOG(PLUM_INFO, "Successfully to included file");
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac0a_hl_constval_statement_t* constval) {
@@ -173,25 +186,25 @@ rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "constval").code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0_value_t value;
     if(rac0a_parse_number(parser, &value).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     constval->label = rac0a_string_copy(token.lexeme);
@@ -199,7 +212,7 @@ rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac
 
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 // todo
@@ -208,23 +221,23 @@ rac0a_parse_result_t rac0a_parse_constblock_constval_argument_definition(rac0a_p
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "constval").code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };   
+    return rac0a_parse_result_ok();   
 }
 
 // todo
@@ -233,23 +246,23 @@ rac0a_parse_result_t rac0a_parse_constblock_constblock_argument_definition(rac0a
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "constblock").code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };   
+    return rac0a_parse_result_ok();   
 }
 
 // todo
@@ -257,15 +270,15 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_definition(rac0a_parser_t* 
     rac0a_lexer_t backup = parser->lexer;
 
     if(rac0a_parse_constblock_constval_argument_definition(parser).code == RAC0A_OK) {
-        return (rac0a_parse_result_t) { RAC0A_OK };  
+        return rac0a_parse_result_ok();  
     }
         
     if(rac0a_parse_constblock_constblock_argument_definition(parser).code == RAC0A_OK) {
-        return (rac0a_parse_result_t) { RAC0A_OK };  
+        return rac0a_parse_result_ok();  
     }
 
     parser->lexer = backup;
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
+    return rac0a_parse_result_error("todo", 0);
 }
 
 rac0a_parse_result_t rac0a_parse_constblock_argument_list_definition(rac0a_parser_t* parser) {
@@ -281,10 +294,10 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_list_definition(rac0a_parse
             break;
 
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, rac0a_hl_constblock_statement_t* block) {
@@ -292,44 +305,44 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "constblock").code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_token_t token;
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_l_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
     
     if(rac0a_parse_constblock_argument_list_definition(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     // already handled by rac0a_parse_constblock_argument_list_definition
     // if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
     //     parser->lexer = backup;
     //     rac0a_free_token(token);
-    //     return (rac0a_parse_result_t) { RAC0A_ERROR };
+    //     return rac0a_parse_result_error("todo", 0);
     // }
     
     if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
     
     rac0a_hl_statement_list_t constblock_statements;
@@ -339,14 +352,14 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
         parser->lexer = backup;
         rac0a_free_token(token);
         free_vector(&constblock_statements);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_r_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
         rac0a_free_hl_statement_list(&constblock_statements);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     block->label = rac0a_string_copy(token.lexeme);
@@ -354,7 +367,7 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
 
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_hl_label_statement_t* label) {
@@ -364,19 +377,19 @@ rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
     
     if(rac0a_parse_colon(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     label->label = rac0a_string_copy(token.lexeme);
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, string_t* label) {
@@ -384,19 +397,19 @@ rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, strin
 
     if(rac0a_parse_dollar(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     *label = rac0a_string_copy(token.lexeme);
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_label_pointer(rac0a_parser_t* parser, string_t* label) {
@@ -404,19 +417,19 @@ rac0a_parse_result_t rac0a_parse_label_pointer(rac0a_parser_t* parser, string_t*
 
     if(rac0a_parse_ampersand(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     *label = rac0a_string_copy(token.lexeme);
     rac0a_free_token(token);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_value(rac0a_parser_t* parser, rac0a_hl_value_t* value) {
@@ -427,24 +440,24 @@ rac0a_parse_result_t rac0a_parse_value(rac0a_parser_t* parser, rac0a_hl_value_t*
         value->type = RAC0A_HL_VALUE_TYPE_NUMBER;
         value->as.value = number;
 
-        return (rac0a_parse_result_t) { RAC0A_OK };
+        return rac0a_parse_result_ok();
     }
 
     if(rac0a_parse_const_thing_usage(parser, &label).code == RAC0A_OK) {
         value->type = RAC0A_HL_VALUE_TYPE_CONSTVAL;
         value->as.constval_label = rac0a_string_copy(label);
 
-        return (rac0a_parse_result_t) { RAC0A_OK };
+        return rac0a_parse_result_ok();
     }
 
     if(rac0a_parse_label_pointer(parser, &label).code == RAC0A_OK) {
         value->type = RAC0A_HL_VALUE_TYPE_LABEL_POINTER;
         value->as.label = label = rac0a_string_copy(label);
 
-        return (rac0a_parse_result_t) { RAC0A_OK };
+        return rac0a_parse_result_ok();
     }
 
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
+    return rac0a_parse_result_error("todo", 0);
 }
 
 rac0a_parse_result_t rac0a_parse_instruction_noarg(rac0a_parser_t* parser, const string_t lexem) {
@@ -456,15 +469,15 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const s
 
     if(rac0a_parse_exact_word(parser, lexem).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_value(parser, value).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 #define PARSE_INSTRUCTION_NOARG(label, operation_code)                              \
@@ -475,7 +488,7 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const s
         inst->inst.as.opcode = operation_code;                                      \
         inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;                                \
                                                                                     \
-        return (rac0a_parse_result_t) { RAC0A_OK };                                 \
+        return rac0a_parse_result_ok();                                 \
     }                                                                               \
 
 #define PARSE_INSTRUCTION_ARG(label, operation_code)                                \
@@ -486,7 +499,7 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const s
         inst->inst.as.opcode = operation_code;                                      \
         inst->value = value;                                                        \
                                                                                     \
-        return (rac0a_parse_result_t) { RAC0A_OK };                                 \
+        return rac0a_parse_result_ok();                                 \
     }                                                                               \
 
 rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_instruction_statement_t* inst) {
@@ -561,7 +574,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
 
     parser->lexer = backup;
 
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
+    return rac0a_parse_result_error("todo", 0);
 }
 
 rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
@@ -571,13 +584,13 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_h
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "db").code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     string_t string;
@@ -585,7 +598,7 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_h
     if(rac0a_parse_string(parser, &string).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     value->label = label.lexeme;
@@ -594,7 +607,7 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_h
     
     free(string);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_hl_word_def_statement_t* value) {
@@ -604,25 +617,25 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "dw").code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
     
     if(rac0a_parse_value(parser, &value->value).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     value->label = rac0a_string_copy(label.lexeme);
     rac0a_free_token(label);
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, rac0a_hl_statement_list_t* list) {
@@ -692,11 +705,11 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, rac0a_hl
             --parser->lexer.pointer;
             break;
         } else {
-            return (rac0a_parse_result_t) { RAC0A_ERROR };
+            return rac0a_parse_result_error("todo", 0);
         }
     }
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 // todo
@@ -707,14 +720,14 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_usage(rac0a_parser_t* parse
     rac0a_lexer_t backup = parser->lexer;
 
     if(rac0a_parse_constblock_usage(parser).code == RAC0A_OK) {
-        return (rac0a_parse_result_t) { RAC0A_OK };
+        return rac0a_parse_result_ok();
     }
 
     rac0a_hl_value_t value;
     if(rac0a_parse_value(parser, &value).code == RAC0A_OK)
-        return (rac0a_parse_result_t) { RAC0A_OK };
+        return rac0a_parse_result_ok();
 
-    return (rac0a_parse_result_t) { RAC0A_ERROR };
+    return rac0a_parse_result_error("todo", 0);
 }
 
 // todo
@@ -731,10 +744,10 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_list_usage(rac0a_parser_t* 
             break;
 
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 // todo
@@ -743,31 +756,31 @@ rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser) {
 
     if(rac0a_parse_dollar(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_label(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_l_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_constblock_argument_list_usage(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     // already handled by rac0a_parse_constblock_argument_list_usage
     // if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
     //     parser->lexer = backup;
-    //     return (rac0a_parse_result_t) { RAC0A_ERROR };
+    //     return rac0a_parse_result_error("todo", 0);
     // }
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
@@ -775,35 +788,35 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_exact_word(parser, "module").code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_label(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
     
     if(rac0a_parse_statement_list(parser, &parser->hl_statements).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
     if(rac0a_parse_r_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return (rac0a_parse_result_t) { RAC0A_ERROR };
+        return rac0a_parse_result_error("todo", 0);
     }
 
-    return (rac0a_parse_result_t) { RAC0A_OK };
+    return rac0a_parse_result_ok();
 }
 
 rac0a_hl_statement_list_t rac0a_parse_program(const string_t input) {
