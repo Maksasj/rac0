@@ -805,6 +805,19 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
         return rac0a_parse_result_error("Failed to parse module definition, expected label", parser->lexer.pointer);
     }
 
+    /* todo
+    rac0a_token_t token;
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
+        parser->lexer = backup;
+        return rac0a_parse_result_error("Failed to parse label pointer usage, expected label", parser->lexer.pointer);
+    }
+
+    *label = rac0a_string_copy(token.lexeme);
+    rac0a_free_token(token);
+    */
+
+    // there we should validate if module was prev included
+
     if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return rac0a_parse_result_error("Failed to parse module definition, expected '{' symbol", parser->lexer.pointer);

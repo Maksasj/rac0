@@ -2,6 +2,14 @@
 #include "rac0a_assembler.h"
 
 int main(int argc, char *argv[]) {
+    string_set_t set;
+    create_string_set(&set, 1000);
+
+    string_set_insert(&set, "test");
+
+    PLUM_LOG(PLUM_EXPERIMENTAL)
+
+    /*
     if(argc < 3) {
         PLUM_LOG(PLUM_ERROR, "File usage: %s <input file name> <output file name>", argv[0]);
         return 1;
@@ -23,6 +31,7 @@ int main(int argc, char *argv[]) {
     FILE *out_file = fopen(argv[2], "wb");
     fwrite(program.data, sizeof(rac0_byte_t), program.size, out_file);
     fclose(out_file);
+    */
 
     return 0;
 }

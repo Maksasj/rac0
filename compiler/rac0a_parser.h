@@ -28,7 +28,6 @@ rac0a_parse_result_t rac0a_parse_result_error(const char* message, rac0_u64_t po
 
 typedef struct {
     rac0a_lexer_t lexer;
-
     rac0a_hl_statement_list_t hl_statements;
 } rac0a_parser_t;
 
