@@ -3,6 +3,7 @@
 rac0a_parse_result_t rac0a_parse_result_ok() {
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
+
 rac0a_parse_result_t rac0a_parse_result_error(const char* message, rac0_u64_t pointer) {
     return (rac0a_parse_result_t) { 
         .code = RAC0A_ERROR, 
@@ -38,7 +39,7 @@ rac0a_parse_result_t rac0a_parse_token(rac0a_parser_t* parser, rac0a_token_type_
 
     parser->lexer = backup;
     
-    return rac0a_parse_result_error("todo", 0);
+    return rac0a_parse_result_error("todo", parser->lexer.pointer);
 }
 
 rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const string_t lexem) {
@@ -47,13 +48,13 @@ rac0a_parse_result_t rac0a_parse_exact_word(rac0a_parser_t* parser, const string
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Expected label token", parser->lexer.pointer);
     }
         
     if(strcmp(token.lexeme, lexem) != 0) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Expected label lexeme to match", parser->lexer.pointer);
     }
 
     rac0a_free_token(token);
@@ -97,7 +98,7 @@ rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* nu
         return rac0a_parse_result_ok();
     }
 
-    return rac0a_parse_result_error("todo", 0);
+    return rac0a_parse_result_error("Failed to parse number", parser->lexer.pointer);
 }
 
 rac0a_parse_result_t rac0a_parse_l_bracket(rac0a_parser_t* parser) {
@@ -120,7 +121,7 @@ rac0a_parse_result_t rac0a_parse_string(rac0a_parser_t* parser, string_t* string
         return rac0a_parse_result_ok();
     }
 
-    return rac0a_parse_result_error("todo", 0);
+    return rac0a_parse_result_error("Failed to parse string", parser->lexer.pointer);
 }
 
 rac0a_parse_result_t rac0a_parse_ampersand(rac0a_parser_t* parser) {
@@ -145,28 +146,28 @@ rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse include statement, expected @ symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "include").code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse include statement, expected 'include' keyword", parser->lexer.pointer);
     }
 
     string_t include_path;
     if(rac0a_parse_string(parser, &include_path).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse include statement, expected string", parser->lexer.pointer);
     }
 
     PLUM_LOG(PLUM_INFO, "Trying to include file '%s'", include_path);
 
     string_t source = rac0_utils_read_file_string(include_path);
-        free(include_path);
+    free(include_path);
 
     if(source == NULL) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to open included file", parser->lexer.pointer);
     }
 
     rac0a_hl_statement_list_t child_hl = rac0a_parse_program(source);
@@ -186,25 +187,25 @@ rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constval statement, expected @ symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "constval").code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constval statement, expected 'constval' keyword", parser->lexer.pointer);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constval statement, expected label", parser->lexer.pointer);
     }
 
     rac0_value_t value;
     if(rac0a_parse_number(parser, &value).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constval statement, expected number", parser->lexer.pointer);
     }
 
     constval->label = rac0a_string_copy(token.lexeme);
@@ -221,18 +222,18 @@ rac0a_parse_result_t rac0a_parse_constblock_constval_argument_definition(rac0a_p
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition constval argument, expected '@' symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "constval").code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition constval argument, expected 'constval' keyword", parser->lexer.pointer);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition constval argument, expected label", parser->lexer.pointer);
     }
 
     rac0a_free_token(token);
@@ -246,18 +247,18 @@ rac0a_parse_result_t rac0a_parse_constblock_constblock_argument_definition(rac0a
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition constblock argument, expected '@' symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "constblock").code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition constblock argument, expected 'constblock' keyword", parser->lexer.pointer);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition constblock argument, expected label", parser->lexer.pointer);
     }
 
     rac0a_free_token(token);
@@ -278,7 +279,7 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_definition(rac0a_parser_t* 
     }
 
     parser->lexer = backup;
-    return rac0a_parse_result_error("todo", 0);
+    return rac0a_parse_result_error("Failed to parse constblock definition argument", parser->lexer.pointer);
 }
 
 rac0a_parse_result_t rac0a_parse_constblock_argument_list_definition(rac0a_parser_t* parser) {
@@ -294,7 +295,7 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_list_definition(rac0a_parse
             break;
 
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition argument list", parser->lexer.pointer);
     }
 
     return rac0a_parse_result_ok();
@@ -305,61 +306,64 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition, expected '@' symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "constblock").code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition, expected 'constblock' keyword", parser->lexer.pointer);
     }
 
     rac0a_token_t token;
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition, expected label", parser->lexer.pointer);
     }
 
     if(rac0a_parse_l_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition, expected '(' symbol", parser->lexer.pointer);
     }
     
     if(rac0a_parse_constblock_argument_list_definition(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition, failed to parse constblock argument list", parser->lexer.pointer);
     }
 
     // already handled by rac0a_parse_constblock_argument_list_definition
     // if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
     //     parser->lexer = backup;
     //     rac0a_free_token(token);
-    //     return rac0a_parse_result_error("todo", 0);
+    //     return rac0a_parse_result_error("todo", parser->lexer.pointer);
     // }
     
     if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition, expected '{' symbol", parser->lexer.pointer);
     }
     
     rac0a_hl_statement_list_t constblock_statements;
     create_vector(&constblock_statements, 100);
 
-    if(rac0a_parse_statement_list(parser, &constblock_statements).code != RAC0A_OK) {
+    rac0a_parse_result_t result;
+    result = rac0a_parse_statement_list(parser, &constblock_statements);
+
+    if(result.code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
         free_vector(&constblock_statements);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error(result.as.error.message, parser->lexer.pointer);
     }
 
     if(rac0a_parse_r_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
         rac0a_free_hl_statement_list(&constblock_statements);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock definition, expected '}' symbol", parser->lexer.pointer);
     }
 
     block->label = rac0a_string_copy(token.lexeme);
@@ -377,13 +381,13 @@ rac0a_parse_result_t rac0a_parse_label_definition(rac0a_parser_t* parser, rac0a_
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse label definition, expected label", parser->lexer.pointer);
     }
     
     if(rac0a_parse_colon(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse label definition, expected ':' symbol", parser->lexer.pointer);
     }
 
     label->label = rac0a_string_copy(token.lexeme);
@@ -397,13 +401,13 @@ rac0a_parse_result_t rac0a_parse_const_thing_usage(rac0a_parser_t* parser, strin
 
     if(rac0a_parse_dollar(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse const thing usage, expected '$' symbol", parser->lexer.pointer);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse const thing usage, expected label", parser->lexer.pointer);
     }
 
     *label = rac0a_string_copy(token.lexeme);
@@ -417,13 +421,13 @@ rac0a_parse_result_t rac0a_parse_label_pointer(rac0a_parser_t* parser, string_t*
 
     if(rac0a_parse_ampersand(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse label pointer usage, expected '&'", parser->lexer.pointer);
     }
 
     rac0a_token_t token;
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse label pointer usage, expected label", parser->lexer.pointer);
     }
 
     *label = rac0a_string_copy(token.lexeme);
@@ -457,7 +461,7 @@ rac0a_parse_result_t rac0a_parse_value(rac0a_parser_t* parser, rac0a_hl_value_t*
         return rac0a_parse_result_ok();
     }
 
-    return rac0a_parse_result_error("todo", 0);
+    return rac0a_parse_result_error("Failed to parse value reference", parser->lexer.pointer);
 }
 
 rac0a_parse_result_t rac0a_parse_instruction_noarg(rac0a_parser_t* parser, const string_t lexem) {
@@ -469,12 +473,12 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const s
 
     if(rac0a_parse_exact_word(parser, lexem).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse instruction with arguments, expected instruction identifier", parser->lexer.pointer);
     }
 
     if(rac0a_parse_value(parser, value).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse instruction with arguments, expected value", parser->lexer.pointer);
     }
 
     return rac0a_parse_result_ok();
@@ -488,18 +492,18 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const s
         inst->inst.as.opcode = operation_code;                                      \
         inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;                                \
                                                                                     \
-        return rac0a_parse_result_ok();                                 \
+        return rac0a_parse_result_ok();                                             \
     }                                                                               \
 
 #define PARSE_INSTRUCTION_ARG(label, operation_code)                                \
     if(rac0a_parse_instruction_arg(parser, label, &value).code == RAC0A_OK) {       \
-        PLUM_LOG(PLUM_TRACE, label "instruction definition");                       \
+        PLUM_LOG(PLUM_TRACE, label " instruction definition");                      \
                                                                                     \
         inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;                         \
         inst->inst.as.opcode = operation_code;                                      \
         inst->value = value;                                                        \
                                                                                     \
-        return rac0a_parse_result_ok();                                 \
+        return rac0a_parse_result_ok();                                             \
     }                                                                               \
 
 rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_instruction_statement_t* inst) {
@@ -574,7 +578,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
 
     parser->lexer = backup;
 
-    return rac0a_parse_result_error("todo", 0);
+    return rac0a_parse_result_error("Failed to parse instruction, unknown instruction", parser->lexer.pointer);
 }
 
 rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
@@ -584,13 +588,13 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_h
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse byte definition, expected label", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "db").code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse byte definition, expected 'db' keyword", parser->lexer.pointer);
     }
 
     string_t string;
@@ -598,7 +602,7 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_h
     if(rac0a_parse_string(parser, &string).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse byte definition, expected string", parser->lexer.pointer);
     }
 
     value->label = label.lexeme;
@@ -617,19 +621,19 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
 
     if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse word definition, expected label", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "dw").code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse word definition, expected 'dw' keyword", parser->lexer.pointer);
     }
     
     if(rac0a_parse_value(parser, &value->value).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse word definition, expected value", parser->lexer.pointer);
     }
 
     value->label = rac0a_string_copy(label.lexeme);
@@ -705,7 +709,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, rac0a_hl
             --parser->lexer.pointer;
             break;
         } else {
-            return rac0a_parse_result_error("todo", 0);
+            return rac0a_parse_result_error("Failed to parse statement list, unknown statement", parser->lexer.pointer);
         }
     }
 
@@ -727,7 +731,7 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_usage(rac0a_parser_t* parse
     if(rac0a_parse_value(parser, &value).code == RAC0A_OK)
         return rac0a_parse_result_ok();
 
-    return rac0a_parse_result_error("todo", 0);
+    return rac0a_parse_result_error("Failed to parse constblock usage argument", parser->lexer.pointer);
 }
 
 // todo
@@ -744,7 +748,7 @@ rac0a_parse_result_t rac0a_parse_constblock_argument_list_usage(rac0a_parser_t* 
             break;
 
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock argument list", parser->lexer.pointer);
     }
 
     return rac0a_parse_result_ok();
@@ -756,28 +760,28 @@ rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser) {
 
     if(rac0a_parse_dollar(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock usage, expected '$' symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_label(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock usage, expected label", parser->lexer.pointer);
     }
 
     if(rac0a_parse_l_paren(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock usage, expected '(' symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_constblock_argument_list_usage(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse constblock usage, failed to parse argument list", parser->lexer.pointer);
     }
 
     // already handled by rac0a_parse_constblock_argument_list_usage
     // if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
     //     parser->lexer = backup;
-    //     return rac0a_parse_result_error("todo", 0);
+    //     return rac0a_parse_result_error("todo", parser->lexer.pointer);
     // }
 
     return rac0a_parse_result_ok();
@@ -788,32 +792,33 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
 
     if(rac0a_parse_at(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse module definition, expected '@' symbol", parser->lexer.pointer);
     }
 
     if(rac0a_parse_exact_word(parser, "module").code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse module definition, expected 'module' keyword", parser->lexer.pointer);
     }
 
     if(rac0a_parse_label(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse module definition, expected label", parser->lexer.pointer);
     }
 
     if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse module definition, expected '{' symbol", parser->lexer.pointer);
     }
     
-    if(rac0a_parse_statement_list(parser, &parser->hl_statements).code != RAC0A_OK) {
+    rac0a_parse_result_t result = rac0a_parse_statement_list(parser, &parser->hl_statements);
+    if(result.code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error(result.as.error.message, parser->lexer.pointer);
     }
 
     if(rac0a_parse_r_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("todo", 0);
+        return rac0a_parse_result_error("Failed to parse module definition, expected '}' symbol", parser->lexer.pointer);
     }
 
     return rac0a_parse_result_ok();
@@ -832,13 +837,14 @@ rac0a_hl_statement_list_t rac0a_parse_program(const string_t input) {
     while(1) {
         if(rac0a_parse_eof(&parser).code == RAC0A_OK)
             break;
-
-        if(rac0a_parse_statement_list(&parser, &parser.hl_statements).code == RAC0A_OK) {
+        
+        rac0a_parse_result_t result = rac0a_parse_statement_list(&parser, &parser.hl_statements);
+        if(result.code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Statement list");
             continue;
         }
             
-        PLUM_LOG(PLUM_ERROR, "Dead end");
+        PLUM_LOG(PLUM_ERROR, "Failed to parse program with error: %s", result.as.error.message);
         break;
     }
 
