@@ -371,106 +371,97 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const s
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
+#define PARSE_INSTRUCTION_NOARG(label, operation_code)                              \
+    if(rac0a_parse_instruction_noarg(parser, label).code == RAC0A_OK) {             \
+        PLUM_LOG(PLUM_TRACE, label " instruction definition");                      \
+                                                                                    \
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;                         \
+        inst->inst.as.opcode = operation_code;                                      \
+        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;                                \
+                                                                                    \
+        return (rac0a_parse_result_t) { RAC0A_OK };                                 \
+    }                                                                               \
+
+#define PARSE_INSTRUCTION_ARG(label, operation_code)                                \
+    if(rac0a_parse_instruction_arg(parser, label, &value).code == RAC0A_OK) {       \
+        PLUM_LOG(PLUM_TRACE, label "instruction definition");                       \
+                                                                                    \
+        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;                         \
+        inst->inst.as.opcode = operation_code;                                      \
+        inst->value = value;                                                        \
+                                                                                    \
+        return (rac0a_parse_result_t) { RAC0A_OK };                                 \
+    }                                                                               \
+
 rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_instruction_statement_t* inst) {
     rac0a_lexer_t backup = parser->lexer;
 
     rac0a_hl_value_t value;
 
     // cpu
-    if(rac0a_parse_instruction_noarg(parser, "halt").code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "HALT instruction definition");
-
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_HALT_OPCODE;
-        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
-        
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
-
-    if(rac0a_parse_instruction_noarg(parser, "wait").code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "WAIT instruction definition");
-
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_WAIT_OPCODE;
-        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
-        
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
+    PARSE_INSTRUCTION_NOARG("halt", RAC0_HALT_OPCODE)
+    PARSE_INSTRUCTION_NOARG("wait", RAC0_WAIT_OPCODE)
+    PARSE_INSTRUCTION_NOARG("setidtt", RAC0_SETIDTT_OPCODE)
+    PARSE_INSTRUCTION_NOARG("setidtst", RAC0_SETIDTST_OPCODE)
+    PARSE_INSTRUCTION_NOARG("setptbat", RAC0_SETPTBAT_OPCODE)
+    PARSE_INSTRUCTION_NOARG("setptst", RAC0_SETPTST_OPCODE)
+    PARSE_INSTRUCTION_NOARG("setptpst", RAC0_SETPTPST_OPCODE)
+    PARSE_INSTRUCTION_NOARG("settt", RAC0_SETTT_OPCODE)
+    PARSE_INSTRUCTION_NOARG("setstt", RAC0_SETSTT_OPCODE)
 
     // stack
-    if(rac0a_parse_instruction_arg(parser, "pusha", &value).code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "PUSHA instruction definition");
+    PARSE_INSTRUCTION_ARG("pusha", RAC0_PUSHA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("pushpc", RAC0_PUSHPC_OPCODE);
+    PARSE_INSTRUCTION_NOARG("pushss", RAC0_PUSHSS_OPCODE);
+    PARSE_INSTRUCTION_NOARG("pushdc", RAC0_PUSHDC_OPCODE);
+    PARSE_INSTRUCTION_NOARG("pushms", RAC0_PUSHMS_OPCODE);
+    PARSE_INSTRUCTION_NOARG("dupt", RAC0_DUPT_OPCODE);
+    PARSE_INSTRUCTION_NOARG("dupn", RAC0_DUPN_OPCODE);
+    PARSE_INSTRUCTION_NOARG("drop", RAC0_DROP_OPCODE);
+    PARSE_INSTRUCTION_NOARG("swap", RAC0_SWAP_OPCODE);
 
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_PUSHA_OPCODE;
-        inst->value = value;
-
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
-
-    if(rac0a_parse_instruction_noarg(parser, "drop").code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "DROP instruction definition");
-
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_DROP_OPCODE;
-        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
-        
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
+    // memory
+    PARSE_INSTRUCTION_NOARG("store", RAC0_STORE_OPCODE);
+    PARSE_INSTRUCTION_ARG("storea", RAC0_STOREA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("load", RAC0_LOAD_OPCODE);
+    PARSE_INSTRUCTION_ARG("loada", RAC0_LOADA_OPCODE);
 
     // arithmetic
-    if(rac0a_parse_instruction_arg(parser, "addat", &value).code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "ADDAT instruction definition");
+    PARSE_INSTRUCTION_NOARG("add", RAC0_ADD_OPCODE);
+    PARSE_INSTRUCTION_NOARG("sub", RAC0_SUB_OPCODE);
+    PARSE_INSTRUCTION_NOARG("mul", RAC0_MUL_OPCODE);
+    PARSE_INSTRUCTION_NOARG("div", RAC0_DIV_OPCODE);
+    PARSE_INSTRUCTION_NOARG("mod", RAC0_MOD_OPCODE);
 
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_ADDAT_OPCODE;
-        inst->value = value;
-
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
+    // logic
+    PARSE_INSTRUCTION_NOARG("cmp", RAC0_CMP_OPCODE);
+    PARSE_INSTRUCTION_NOARG("neg", RAC0_NEG_OPCODE);
+    PARSE_INSTRUCTION_NOARG("not", RAC0_NOT_OPCODE);
+    PARSE_INSTRUCTION_NOARG("and", RAC0_AND_OPCODE);
+    PARSE_INSTRUCTION_NOARG("or", RAC0_OR_OPCODE);
+    PARSE_INSTRUCTION_NOARG("nand", RAC0_NAND_OPCODE);
+    PARSE_INSTRUCTION_NOARG("nor", RAC0_NOR_OPCODE);
+    PARSE_INSTRUCTION_NOARG("xor", RAC0_XOR_OPCODE);
 
     // flow
-    if(rac0a_parse_instruction_arg(parser, "jmpa", &value).code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "JMPA instruction definition");
-
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_JMPA_OPCODE;
-        inst->value = value;
-
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
+    PARSE_INSTRUCTION_ARG("jmpa", RAC0_JMPA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("jmpt", RAC0_JMPT_OPCODE);
+    PARSE_INSTRUCTION_NOARG("jza", RAC0_JZA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("jnza", RAC0_JNZA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("jnega", RAC0_JNEGA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("jposa", RAC0_JPOSA_OPCODE);
 
     // device
-    if(rac0a_parse_instruction_arg(parser, "putda", &value).code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "PUTDA instruction definition");
-
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_PUTDA_OPCODE;
-        inst->value = value;
-
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
+    PARSE_INSTRUCTION_ARG("setda", RAC0_SETDA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("setdt", RAC0_SETDT_OPCODE);
+    PARSE_INSTRUCTION_ARG("fetchda", RAC0_FETCHDA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("fetchdt", RAC0_FETCHDT_OPCODE);
+    PARSE_INSTRUCTION_ARG("putda", RAC0_PUTDA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("putdt", RAC0_PUTDT_OPCODE);
 
     // interrupt
-    if(rac0a_parse_instruction_arg(parser, "int", &value).code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "INT instruction definition");
-
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_INT_OPCODE;
-        inst->value = value;
-
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
-
-    if(rac0a_parse_instruction_noarg(parser, "iret").code == RAC0A_OK) {
-        PLUM_LOG(PLUM_TRACE, "IRET instruction definition");
-
-        inst->inst.type = RAC0A_HL_INSTRUCTION_TYPE_OPCODE;
-        inst->inst.as.opcode = RAC0_IRET_OPCODE;
-        inst->value.type = RAC0A_HL_VALUE_TYPE_NONE;
-        
-        return (rac0a_parse_result_t) { RAC0A_OK };
-    }
+    PARSE_INSTRUCTION_ARG("int", RAC0_INT_OPCODE);
+    PARSE_INSTRUCTION_ARG("iret", RAC0_IRET_OPCODE);
 
     parser->lexer = backup;
 

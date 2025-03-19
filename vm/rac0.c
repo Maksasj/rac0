@@ -1,62 +1,191 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#define RAC0_LOG_CPU_INSTRUCTION
 #include "rac0.h"
 
-#include "rac0_utils.h"
-
-void debug_console_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
-    PLUM_LOG(PLUM_EXPERIMENTAL, "%d", value);
+rac0_u8_t rac0_stack_empty(rac0_stack_t* stack) {
+    return stack->top == 0;
 }
 
-rac0_value_t debug_console_device_pool(void* device_data, rac0_u64_t adress) {
-    return 0;
+void rac0_stack_push(rac0_stack_t* stack, rac0_value_t value) {
+    stack->values[stack->top] = value;
+    ++stack->top;
 }
 
-int main() {
-    rac0_cpu_t cpu = (rac0_cpu_t) {
-        .pc = 0,
-        .device = 0,
-        .halted = 0,
-        .stack = {
-            .top = 0 
-        }
-    };
-    
-    rac0_inst_t insts[] = {
-        (rac0_inst_t) { .opcode = RAC0_PUSHA_OPCODE, .value = 0x0000000000000001 },
-        (rac0_inst_t) { .opcode = RAC0_ADDAT_OPCODE, .value = 1 },
-        (rac0_inst_t) { .opcode = RAC0_PUTDA_OPCODE, .value = 0 },
-        (rac0_inst_t) { .opcode = RAC0_JMPA_OPCODE, .value = 1 * sizeof(rac0_inst_t) },
-        (rac0_inst_t) { .opcode = RAC0_HALT_OPCODE },
-    };
+rac0_value_t rac0_stack_get_top(rac0_stack_t* stack) {
+    if(rac0_stack_empty(stack))
+        return 0;
 
-    rac0_byte_t* byte_code = (rac0_byte_t*) rac0_utils_read_file_string("a.bin");
-    
-    if(byte_code == NULL)
-        return 1;
+    return stack->values[stack->top - 1];
+}
 
-    rac0_memory_t memory = (rac0_memory_t) {
-        // .memory = (rac0_byte_t*) malloc(sizeof(rac0_byte_t) * RAC0_MEGABYTE_SIZE)  
-        // .memory = (rac0_byte_t*) &insts
-        .memory = (rac0_byte_t*) byte_code
-    };
+rac0_value_t rac0_stack_get_next(rac0_stack_t* stack) {
+    if(rac0_stack_empty(stack))
+        return 0;
 
-    rac0_device_t devices[] = {
-        (rac0_device_t) { 
-            .device_data = NULL, 
-            .push = debug_console_device_push, 
-            .pool = debug_console_device_pool 
-        }
-    };
+    if(stack->top <= 1)
+        return 0;
 
-    PLUM_LOG(PLUM_INFO, "CPU started");
+    return stack->values[stack->top - 2];
+}
 
-    while(!cpu.halted)
-        rac0_cpu_inst_cycle(&cpu, &memory, devices);
+void rac0_stack_drop(rac0_stack_t* stack) {
+    if(rac0_stack_empty(stack))
+        return;
 
-    PLUM_LOG(PLUM_INFO, "CPU halted");
+    --stack->top;
+}
 
-    return 0;
+rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory) {
+    return *((rac0_inst_t*) &memory->memory[pc]);
+}
+
+void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* devices) {
+    rac0_inst_t inst = rac0_fetch_inst(cpu->pc, memory);
+
+    if(inst.opcode == RAC0_HALT_OPCODE) { // cpu
+        cpu->halted = 1;
+        goto inc;
+    } else if(inst.opcode == RAC0_WAIT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode WAIT is not implemented");
+    } else if(inst.opcode == RAC0_SETIDTT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode SETIDTT is not implemented");
+    } else if(inst.opcode == RAC0_SETIDTST_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode SETIDTST is not implemented");
+    } else if(inst.opcode == RAC0_SETPTBAT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode SETPTBAT is not implemented");
+    } else if(inst.opcode == RAC0_SETPTST_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode SETPTST is not implemented");
+    } else if(inst.opcode == RAC0_SETPTPST_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode SETPTPST is not implemented");
+    } else if(inst.opcode == RAC0_SETTT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode SETTT is not implemented");
+    } else if(inst.opcode == RAC0_SETSTT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode SETSTT is not implemented");
+    } else if(inst.opcode == RAC0_PUSHA_OPCODE) { // stack
+        rac0_stack_push(&cpu->stack, inst.value);
+        goto inc;
+    } else if(inst.opcode == RAC0_PUSHPC_OPCODE) {
+        rac0_stack_push(&cpu->stack, cpu->pc);
+        goto inc;
+    } else if(inst.opcode == RAC0_PUSHSS_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode PUSHSS is not implemented");
+    } else if(inst.opcode == RAC0_PUSHDC_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode PUSHDC is not implemented");
+    } else if(inst.opcode == RAC0_PUSHMS_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode PUSHMS is not implemented");
+    } else if(inst.opcode == RAC0_DUPT_OPCODE) {
+        rac0_stack_push(&cpu->stack, rac0_stack_get_top(&cpu->stack));
+        goto inc;
+    } else if(inst.opcode == RAC0_DUPN_OPCODE) {
+        rac0_stack_push(&cpu->stack, rac0_stack_get_next(&cpu->stack));
+        goto inc;
+    } else if(inst.opcode == RAC0_DROP_OPCODE) {
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
+    } else if(inst.opcode == RAC0_SWAP_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_drop(&cpu->stack);
+        rac0_stack_drop(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top);
+        rac0_stack_push(&cpu->stack, next);
+    } else if(inst.opcode == RAC0_STORE_OPCODE) { // memory
+        PLUM_LOG(PLUM_ERROR, "Opcode STORE is not implemented");
+    } else if(inst.opcode == RAC0_STOREA_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode STOREA is not implemented");
+    } else if(inst.opcode == RAC0_LOAD_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode LOAD is not implemented");
+    } else if(inst.opcode == RAC0_LOADA_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode LOADA is not implemented");
+    } else if(inst.opcode == RAC0_ADD_OPCODE) { // arithmetic
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top + next);
+        goto inc;
+    }  else if(inst.opcode == RAC0_SUB_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top - next);
+        goto inc;
+    } else if(inst.opcode == RAC0_MUL_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top * next);
+        goto inc;
+    } else if(inst.opcode == RAC0_DIV_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top / next);
+        goto inc;
+    } else if(inst.opcode == RAC0_MOD_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top % next);
+        goto inc;
+    } else if(inst.opcode == RAC0_CMP_OPCODE) {  // logic
+        PLUM_LOG(PLUM_ERROR, "Opcode CMP is not implemented");
+    } else if(inst.opcode == RAC0_NEG_OPCODE) { 
+        PLUM_LOG(PLUM_ERROR, "Opcode NEG is not implemented");
+    } else if(inst.opcode == RAC0_NOT_OPCODE) { 
+        PLUM_LOG(PLUM_ERROR, "Opcode NOT is not implemented");
+    } else if(inst.opcode == RAC0_AND_OPCODE) { 
+        PLUM_LOG(PLUM_ERROR, "Opcode AND is not implemented");
+    } else if(inst.opcode == RAC0_OR_OPCODE) { 
+        PLUM_LOG(PLUM_ERROR, "Opcode OR is not implemented");
+    } else if(inst.opcode == RAC0_NAND_OPCODE) { 
+        PLUM_LOG(PLUM_ERROR, "Opcode NAND is not implemented");
+    } else if(inst.opcode == RAC0_NOR_OPCODE) { 
+        PLUM_LOG(PLUM_ERROR, "Opcode NOR is not implemented");
+    } else if(inst.opcode == RAC0_XOR_OPCODE) { 
+        PLUM_LOG(PLUM_ERROR, "Opcode XOR is not implemented");
+    } else if(inst.opcode == RAC0_JMPA_OPCODE) { // flow
+        cpu->pc = inst.value;
+        goto cont;
+    } else if(inst.opcode == RAC0_JMPT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode JMPT is not implemented");
+    } else if(inst.opcode == RAC0_JZA_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode JZA is not implemented");
+    } else if(inst.opcode == RAC0_JNZA_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode JNZA is not implemented");
+    } else if(inst.opcode == RAC0_JNEGA_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode JNEGA is not implemented");
+    } else if(inst.opcode == RAC0_JPOSA_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode JPOSA is not implemented"); 
+    } else if(inst.opcode == RAC0_SETDA_OPCODE) { // device
+        cpu->device = inst.value;
+        goto inc;
+    } else if(inst.opcode == RAC0_SETDT_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        cpu->device = top;
+        goto inc;
+    } else if(inst.opcode == RAC0_FETCHDA_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode POOLDA is not implemented");
+    } else if(inst.opcode == RAC0_FETCHDT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode POOLDT is not implemented");
+    } else if(inst.opcode == RAC0_PUTDA_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_device_t device = devices[cpu->device];
+        (*device.push)(device.device_data, inst.value, top);
+        goto inc;
+    } else if(inst.opcode == RAC0_PUTDT_OPCODE) {
+        PLUM_LOG(PLUM_ERROR, "Opcode PUSHDT is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_device_t device = devices[cpu->device];
+        (*device.push)(device.device_data, top, next);
+    } else if(inst.opcode == RAC0_INT_OPCODE) { // interrupt
+        PLUM_LOG(PLUM_ERROR,"Opcode INT is not implemented");
+    }
+    else if(inst.opcode == RAC0_IRET_OPCODE) {
+        PLUM_LOG(PLUM_ERROR,"Opcode IRET is not implemented");
+    } else {
+        PLUM_LOG(PLUM_ERROR, "Opcode is not implemented %.4x", inst.opcode);
+        return;
+    }
+
+    inc:
+    cpu->pc += sizeof(rac0_inst_t);
+
+    cont:
+
+    // PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, cpu->device);
+    // PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
 }

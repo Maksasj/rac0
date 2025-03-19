@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plum.h"
 #include "rac0_base.h"
 
 typedef char* string_t;

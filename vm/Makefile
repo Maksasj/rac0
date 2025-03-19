@@ -1,12 +1,12 @@
 CC = gcc
-SOURCES = rac0.c rac0_utils.c plum.c haul.c
+SOURCES = main.c rac0.c rac0_utils.c plum.c haul.c
 EXES = rac0
 
 OBJS = $(SOURCES:.c=.o)
 
 all: clean_exec $(EXES) clean
 
-rac0: rac0.o plum.o rac0_utils.o
+rac0: main.o rac0.o plum.o rac0_utils.o
 	$(CC) $^ -o $@
 
 %.o: %.c

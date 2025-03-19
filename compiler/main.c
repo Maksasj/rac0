@@ -2,8 +2,8 @@
 #include "rac0a_assembler.h"
 
 int main(int argc, char *argv[]) {
-    if(argc < 2) {
-        PLUM_LOG(PLUM_ERROR, "File usage: %s <input file name>", argv[0]);
+    if(argc < 3) {
+        PLUM_LOG(PLUM_ERROR, "File usage: %s <input file name> <output file name>", argv[0]);
         return 1;
     }
 
@@ -16,11 +16,11 @@ int main(int argc, char *argv[]) {
     PLUM_LOG(PLUM_INFO, "Parsed program");
     PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&hl_statements));
 
-    rac0a_log_hl_statements("a.parse.txt", &hl_statements);
+    rac0a_log_hl_statements("0_parse_pass.rac0a.dump.txt", &hl_statements);
 
     byte_vector_t program = rac0a_assemble_program(&hl_statements);
 
-    FILE *out_file = fopen("a.bin", "wb");
+    FILE *out_file = fopen(argv[2], "wb");
     fwrite(program.data, sizeof(rac0_byte_t), program.size, out_file);
     fclose(out_file);
 

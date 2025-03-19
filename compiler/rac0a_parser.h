@@ -5,6 +5,7 @@
 
 #include "rac0_utils.h"
 
+#include "plum.h"
 #include "rac0a_lexer.h"
 #include "rac0a_hl.h"
 

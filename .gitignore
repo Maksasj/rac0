@@ -3,3 +3,4 @@ rac0a
 .vscode
 *.o
 *.bin
+*.rac0a.dump.txt
