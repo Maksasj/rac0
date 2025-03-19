@@ -97,6 +97,17 @@ char* rac0a_string_copy_len(const char* input, unsigned long long size) {
     return out;
 }
 
+rac0_u64_t rac0a_get_line_number_from_index(const char* input, unsigned long long index) {
+    rac0_u64_t line = 0;
+
+    for(int i = 0; i < index; ++i) {
+        if(input[i] == '\n')
+            ++line;
+    }
+
+    return line;
+}
+
 rac0a_boolean_t rac0a_in_range_include(char value, char min, char max) {
     return (value >= min) && (value <= max); 
 }

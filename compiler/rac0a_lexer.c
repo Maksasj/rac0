@@ -241,6 +241,18 @@ rac0a_lex_result_t rac0a_lex_comment(rac0a_token_t* token, rac0a_lexer_t* lexer)
     return (rac0a_lex_result_t) { RAC0A_OK };
 }
 
+rac0a_lex_result_t rac0a_lex_comma(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(lexer->input[lexer->pointer] != ',')
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    token->type = RAC0A_TOKEN_COMMA;
+    token->lexeme = rac0a_string_copy(",");;
+
+    lexer->pointer++;
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
 rac0a_lex_result_t rac0a_lex_string(rac0a_token_t* token, rac0a_lexer_t* lexer) {
     if (lexer->input[lexer->pointer] != '"') 
         return (rac0a_lex_result_t) { RAC0A_ERROR };
@@ -360,7 +372,10 @@ rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer) {
 
     if(rac0a_lex_comment(&token, lexer).code == RAC0A_OK)
         return token;
-        
+    
+    if(rac0a_lex_comma(&token, lexer).code == RAC0A_OK)
+        return token;
+    
     if(rac0a_lex_eof(&token, lexer).code == RAC0A_OK)
         return token;
 

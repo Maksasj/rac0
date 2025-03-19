@@ -39,6 +39,7 @@ rac0a_parse_result_t rac0a_parse_percent(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_string(rac0a_parser_t* parser, string_t* string);
 rac0a_parse_result_t rac0a_parse_ampersand(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_comment(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_comma(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser);
 
 // other

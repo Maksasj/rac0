@@ -118,6 +118,10 @@ rac0a_parse_result_t rac0a_parse_comment(rac0a_parser_t* parser) {
     return rac0a_parse_token(parser, RAC0A_TOKEN_COMMENT, NULL);
 }
 
+rac0a_parse_result_t rac0a_parse_comma(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_COMMA, NULL);
+}
+
 rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser) {
     return rac0a_parse_token(parser, RAC0A_TOKEN_EOF, NULL);
 }
@@ -198,6 +202,91 @@ rac0a_parse_result_t rac0a_parse_constval_definition(rac0a_parser_t* parser, rac
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
+// todo
+rac0a_parse_result_t rac0a_parse_constblock_constval_argument_definition(rac0a_parser_t* parser) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    if(rac0a_parse_at(parser).code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    if(rac0a_parse_exact_word(parser, "constval").code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    rac0a_token_t token;
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    rac0a_free_token(token);
+
+    return (rac0a_parse_result_t) { RAC0A_OK };   
+}
+
+// todo
+rac0a_parse_result_t rac0a_parse_constblock_constblock_argument_definition(rac0a_parser_t* parser) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    if(rac0a_parse_at(parser).code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    if(rac0a_parse_exact_word(parser, "constblock").code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    rac0a_token_t token;
+    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &token).code != RAC0A_OK) {
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    rac0a_free_token(token);
+
+    return (rac0a_parse_result_t) { RAC0A_OK };   
+}
+
+// todo
+rac0a_parse_result_t rac0a_parse_constblock_argument_definition(rac0a_parser_t* parser) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    if(rac0a_parse_constblock_constval_argument_definition(parser).code == RAC0A_OK) {
+        return (rac0a_parse_result_t) { RAC0A_OK };  
+    }
+        
+    if(rac0a_parse_constblock_constblock_argument_definition(parser).code == RAC0A_OK) {
+        return (rac0a_parse_result_t) { RAC0A_OK };  
+    }
+
+    parser->lexer = backup;
+    return (rac0a_parse_result_t) { RAC0A_ERROR };
+}
+
+rac0a_parse_result_t rac0a_parse_constblock_argument_list_definition(rac0a_parser_t* parser) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    while (1) {
+        if(rac0a_parse_constblock_argument_definition(parser).code == RAC0A_OK) {
+            if(rac0a_parse_comma(parser).code == RAC0A_OK)
+                continue;
+        }
+        
+        if((rac0a_parse_r_paren(parser).code == RAC0A_OK))
+            break;
+
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    return (rac0a_parse_result_t) { RAC0A_OK };
+}
+
 rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, rac0a_hl_constblock_statement_t* block) {
     rac0a_lexer_t backup = parser->lexer;
 
@@ -224,11 +313,18 @@ rac0a_parse_result_t rac0a_parse_constblock_definition(rac0a_parser_t* parser, r
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
     
-    if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
+    if(rac0a_parse_constblock_argument_list_definition(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         rac0a_free_token(token);
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
+
+    // already handled by rac0a_parse_constblock_argument_list_definition
+    // if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
+    //     parser->lexer = backup;
+    //     rac0a_free_token(token);
+    //     return (rac0a_parse_result_t) { RAC0A_ERROR };
+    // }
     
     if(rac0a_parse_l_bracket(parser).code != RAC0A_OK) {
         parser->lexer = backup;
@@ -603,6 +699,45 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, rac0a_hl
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
 
+// todo
+rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser);
+
+// todo
+rac0a_parse_result_t rac0a_parse_constblock_argument_usage(rac0a_parser_t* parser) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    if(rac0a_parse_constblock_usage(parser).code == RAC0A_OK) {
+        return (rac0a_parse_result_t) { RAC0A_OK };
+    }
+
+    rac0a_hl_value_t value;
+    if(rac0a_parse_value(parser, &value).code == RAC0A_OK)
+        return (rac0a_parse_result_t) { RAC0A_OK };
+
+    return (rac0a_parse_result_t) { RAC0A_ERROR };
+}
+
+// todo
+rac0a_parse_result_t rac0a_parse_constblock_argument_list_usage(rac0a_parser_t* parser) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    while (1) {
+        if(rac0a_parse_constblock_argument_usage(parser).code == RAC0A_OK) {
+            if(rac0a_parse_comma(parser).code == RAC0A_OK) 
+                continue;
+        }
+
+        if (rac0a_parse_r_paren(parser).code == RAC0A_OK)
+            break;
+
+        parser->lexer = backup;
+        return (rac0a_parse_result_t) { RAC0A_ERROR };
+    }
+
+    return (rac0a_parse_result_t) { RAC0A_OK };
+}
+
+// todo
 rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser) {
     rac0a_lexer_t backup = parser->lexer;
 
@@ -620,11 +755,17 @@ rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
-    
-    if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
+
+    if(rac0a_parse_constblock_argument_list_usage(parser).code != RAC0A_OK) {
         parser->lexer = backup;
         return (rac0a_parse_result_t) { RAC0A_ERROR };
     }
+
+    // already handled by rac0a_parse_constblock_argument_list_usage
+    // if(rac0a_parse_r_paren(parser).code != RAC0A_OK) {
+    //     parser->lexer = backup;
+    //     return (rac0a_parse_result_t) { RAC0A_ERROR };
+    // }
 
     return (rac0a_parse_result_t) { RAC0A_OK };
 }
@@ -676,15 +817,16 @@ rac0a_hl_statement_list_t rac0a_parse_program(const string_t input) {
     create_vector(&parser.hl_statements, 1024);
 
     while(1) {
-        if(rac0a_parse_eof(&parser).code == RAC0A_OK) {
+        if(rac0a_parse_eof(&parser).code == RAC0A_OK)
             break;
-        } else if(rac0a_parse_statement_list(&parser, &parser.hl_statements).code == RAC0A_OK) {
+
+        if(rac0a_parse_statement_list(&parser, &parser.hl_statements).code == RAC0A_OK) {
             PLUM_LOG(PLUM_TRACE, "Statement list");
             continue;
-        } else {
-            PLUM_LOG(PLUM_ERROR, "Dead end");
-            break;
         }
+            
+        PLUM_LOG(PLUM_ERROR, "Dead end");
+        break;
     }
 
     return parser.hl_statements;
