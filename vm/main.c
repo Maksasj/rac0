@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "rac0.h"
 
 #include "rac0_utils.h"
+#include "sdl_peripheral.h"
 
 void debug_console_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
     PLUM_LOG(PLUM_EXPERIMENTAL, "%d", value);
@@ -37,14 +39,32 @@ int main(int argc, char *argv[]) {
     if(byte_code == NULL)
         return 1;
 
-    size_t byte_code_size = strlen(byte_code);
+    size_t byte_code_size = 100; // strlen(byte_code);
     memcpy(memory.memory, byte_code, byte_code_size);
 
+    PLUM_LOG(PLUM_EXPERIMENTAL, "%d", byte_code_size);
+
+    sdl_peripheral_devices_data_t sdl_peripheral;
+    sdl_peripheral_initialize(&sdl_peripheral, 160, 144);
+
+    pthread_t sdl_peripheral_thread;
+    pthread_create(&sdl_peripheral_thread, NULL, sdl_peripheral_run, (void*) &sdl_peripheral);
+
     rac0_device_t devices[] = {
-        (rac0_device_t) { 
+        (rac0_device_t) { // Debug console
             .device_data = NULL, 
             .push = debug_console_device_push, 
             .pool = debug_console_device_pool 
+        },
+        (rac0_device_t) { // SDL screen
+            .device_data = &sdl_peripheral, 
+            .push = sdl_peripheral_screen_device_push, 
+            .pool = sdl_peripheral_screen_device_pool 
+        },
+        (rac0_device_t) { // SDL keyboard
+            .device_data = &sdl_peripheral, 
+            .push = sdl_peripheral_keyboard_device_push, 
+            .pool = sdl_peripheral_keyboard_device_pool 
         }
     };
 
@@ -54,6 +74,9 @@ int main(int argc, char *argv[]) {
         rac0_cpu_inst_cycle(&cpu, &memory, devices);
 
     PLUM_LOG(PLUM_INFO, "CPU halted");
+
+    pthread_join(sdl_peripheral_thread, NULL);
+    sdl_peripheral_free(&sdl_peripheral);
 
     return 0;
 }
