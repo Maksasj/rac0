@@ -124,11 +124,26 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         goto inc;
     // maksim ---------------------------------------------------------------------------
     } else if(inst.opcode == RAC0_CMP_OPCODE) {  // logic
-        PLUM_LOG(PLUM_ERROR, "Opcode CMP is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        
+        if(top == next) {
+            rac0_stack_push(&cpu->stack, 0);
+        } else if (top > next) {
+            rac0_stack_push(&cpu->stack, 1);
+        } else if (top < next) {
+            rac0_stack_push(&cpu->stack, -1);
+        }
+        
+        goto inc;
     } else if(inst.opcode == RAC0_NEG_OPCODE) { 
-        PLUM_LOG(PLUM_ERROR, "Opcode NEG is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_stack_push(&cpu->stack, -top);
+        goto inc;
     } else if(inst.opcode == RAC0_NOT_OPCODE) { 
-        PLUM_LOG(PLUM_ERROR, "Opcode NOT is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_stack_push(&cpu->stack, !top);
+        goto inc;
     } else if(inst.opcode == RAC0_AND_OPCODE) { 
         PLUM_LOG(PLUM_ERROR, "Opcode AND is not implemented");
     } else if(inst.opcode == RAC0_OR_OPCODE) { 
