@@ -11,6 +11,7 @@
 typedef char* string_t;
 typedef unsigned char rac0a_boolean_t;
 
+int rac0_utils_read_file_size(char* file_name);
 char* rac0_utils_read_file_bytes(char* file_name);
 char* rac0_utils_read_file_string(char* file_name);
 

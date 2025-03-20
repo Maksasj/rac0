@@ -35,11 +35,14 @@ int main(int argc, char *argv[]) {
     };
 
     rac0_byte_t* byte_code = (rac0_byte_t*) rac0_utils_read_file_string(argv[1]);
-    
+    int byte_code_size = rac0_utils_read_file_size(argv[1]);
+        
+    if(byte_code_size == -1)
+        return 1;
+
     if(byte_code == NULL)
         return 1;
 
-    size_t byte_code_size = 100; // strlen(byte_code);
     memcpy(memory.memory, byte_code, byte_code_size);
 
     PLUM_LOG(PLUM_EXPERIMENTAL, "%d", byte_code_size);

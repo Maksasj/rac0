@@ -46,10 +46,10 @@ xor
 // flow
 jmpa 0x0
 jmpt
-jza
-jnza
-jnega
-jposa
+jza 0x0
+jnza 0x0
+jnega 0x0
+jposa 0x0
 
 // device
 setda 0x0

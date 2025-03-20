@@ -1,5 +1,25 @@
 #include "rac0_utils.h"
 
+int rac0_utils_read_file_size(char* file_name) {
+    FILE *stream = fopen(file_name, "r");
+
+    if(stream == NULL) {
+        PLUM_LOG(PLUM_ERROR, "Failed to open file '%s'", file_name);
+        return -1;
+    }
+
+    if (fseek(stream, 0L, SEEK_END) == 0) {
+        long buf_size = ftell(stream);
+        return buf_size;
+    }
+
+    fclose(stream);
+
+    PLUM_LOG(PLUM_ERROR, "Failed to get file size: '%s'", file_name);
+
+    return -1;
+}
+
 char* rac0_utils_read_file_bytes(char* file_name) {
     FILE *stream = fopen(file_name, "rb");
 

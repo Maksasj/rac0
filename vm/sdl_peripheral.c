@@ -39,17 +39,17 @@ void* sdl_peripheral_run(void* data) {
         SDL_Event e;
 
         while(SDL_PollEvent(&e) > 0) {
+            int code = e.key.keysym.sym;
+
             switch(e.type) {
                 case SDL_QUIT:
                     keep_window_open = 0;
                     break;
                 case SDL_KEYDOWN:
-                    int code = e.key.keysym.sym;
                     if(code >= 0 && code < 322)
                         sdl_peripheral_data->keys[code] = 1;
                     break;
                 case SDL_KEYUP:
-                    int code = e.key.keysym.sym;
                     if(code >= 0 && code < 322)
                         sdl_peripheral_data->keys[code] = 0;
                     break;
@@ -66,7 +66,7 @@ void* sdl_peripheral_run(void* data) {
         SDL_LockTexture(texture, NULL, &pixels, &pitch);
         unsigned int* upixels = (unsigned int*) pixels;
         
-        for(int i = 0; i < 144 * 160; ++i)
+        for(int i = 0; i < sdl_peripheral_data->resolution_height * sdl_peripheral_data->resolution_width; ++i)
             upixels[i] =  sdl_peripheral_data->pixels[i];
  
         SDL_UnlockTexture(texture);
@@ -91,17 +91,28 @@ void* sdl_peripheral_run(void* data) {
 }
 
 void sdl_peripheral_screen_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
+    sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
 
+    if(adress >= 0 && adress < sdl_peripheral_data->resolution_height * sdl_peripheral_data->resolution_width)
+        sdl_peripheral_data->pixels[adress] = value;
 }
 
 rac0_value_t sdl_peripheral_screen_device_pool(void* device_data, rac0_u64_t adress) {
+    sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
+
     return 0;
 }
 
 void sdl_peripheral_keyboard_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
+    sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
 
 }
 
 rac0_value_t sdl_peripheral_keyboard_device_pool(void* device_data, rac0_u64_t adress) {
+    sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
+
+    if(adress >= 0 && adress < 322)
+        return sdl_peripheral_data->keys[adress];
+
     return 0;
 }

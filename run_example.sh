@@ -2,4 +2,4 @@
 
 bash ./build_all.sh
 
-./target/rac0 ./target/examples/window.bin
+# ./target/rac0 ./target/examples/window.bin
