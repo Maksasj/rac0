@@ -23,11 +23,6 @@ rac0_value_t rac0_stack_get_top(rac0_stack_t* stack);
 rac0_value_t rac0_stack_get_next(rac0_stack_t* stack);
 void rac0_stack_drop(rac0_stack_t* stack);
 
-typedef enum {
-    RAC0_CPU_MODE_KERNEL = 0,
-    RAC0_CPU_MODE_USER = 1
-} rac0_cpu_mode_t;
-
 typedef struct {
     // stack
     rac0_stack_t stack;

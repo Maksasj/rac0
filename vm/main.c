@@ -45,8 +45,6 @@ int main(int argc, char *argv[]) {
 
     memcpy(memory.memory, byte_code, byte_code_size);
 
-    PLUM_LOG(PLUM_EXPERIMENTAL, "%d", byte_code_size);
-
     sdl_peripheral_devices_data_t sdl_peripheral;
     sdl_peripheral_initialize(&sdl_peripheral, 160, 144);
 

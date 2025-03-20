@@ -2,7 +2,7 @@ jmpa &code
 
 @constval sys_device_screen 0x1
 
-@constval color_red 0xffff0000
+@constval color_red 0b11111111111111110000000000000000
 @constval color_blue 0xff0000ff
 
 fill_screen: // (color, pc)

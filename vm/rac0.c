@@ -39,7 +39,8 @@ rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory) {
 
 void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* devices) {
     rac0_inst_t inst = rac0_fetch_inst(cpu->pc, memory);
-
+ 
+    // nikita ---------------------------------------------------------------------------
     if(inst.opcode == RAC0_HALT_OPCODE) { // cpu
         cpu->halted = 1;
         goto inc;
@@ -87,6 +88,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_stack_drop(&cpu->stack);
         rac0_stack_push(&cpu->stack, top);
         rac0_stack_push(&cpu->stack, next);
+        goto inc;
     } else if(inst.opcode == RAC0_STORE_OPCODE) { // memory
         PLUM_LOG(PLUM_ERROR, "Opcode STORE is not implemented");
     } else if(inst.opcode == RAC0_STOREA_OPCODE) {
@@ -120,6 +122,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
         rac0_stack_push(&cpu->stack, top % next);
         goto inc;
+    // maksim ---------------------------------------------------------------------------
     } else if(inst.opcode == RAC0_CMP_OPCODE) {  // logic
         PLUM_LOG(PLUM_ERROR, "Opcode CMP is not implemented");
     } else if(inst.opcode == RAC0_NEG_OPCODE) { 
@@ -185,8 +188,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         (*device.push)(device.device_data, top, next);
     } else if(inst.opcode == RAC0_INT_OPCODE) { // interrupt
         PLUM_LOG(PLUM_ERROR,"Opcode INT is not implemented");
-    }
-    else if(inst.opcode == RAC0_IRET_OPCODE) {
+    } else if(inst.opcode == RAC0_IRET_OPCODE) {
         PLUM_LOG(PLUM_ERROR,"Opcode IRET is not implemented");
     } else {
         PLUM_LOG(PLUM_ERROR, "Opcode is not implemented %.4x", inst.opcode);
@@ -198,6 +200,6 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
 
     cont:
 
-    PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, cpu->device);
-    PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
+    // PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, cpu->device);
+    // PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
 }
