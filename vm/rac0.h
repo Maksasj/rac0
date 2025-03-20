@@ -40,16 +40,12 @@ typedef struct {
     // idt
     rac0_value_t idt; // pointer to interupt table
     rac0_value_t iret; // interupt return pointer
-
-    rac0_value_t mode; // mode bit
 } rac0_cpu_t;
 
 typedef struct {    
     rac0_byte_t* memory;
 } rac0_memory_t;
 
-rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory);
-void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* devices);
 rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory);
 void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* devices);
 
