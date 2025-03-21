@@ -184,43 +184,99 @@ rac0a_parse_result_t rac0a_parse_eof(rac0a_parser_t* parser) {
 rac0a_parse_result_t rac0a_parse_include_statement(rac0a_parser_t* parser) {
     rac0a_lexer_t backup = parser->lexer;
 
-    if(rac0a_parse_at(parser).code == RAC0A_ERROR) {
+    rac0a_parse_result_t result;
+
+    result = rac0a_parse_at(parser);
+    if(result.code == RAC0A_OK) {
+
+    } else if(result.code == RAC0A_FAILED) {
+
+    } else if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         return rac0a_parse_result_error("Failed to parse include statement, expected @ symbol", parser->lexer.pointer);
     }
 
-    if(rac0a_parse_exact_word(parser, "include").code == RAC0A_ERROR) {
+    result = rac0a_parse_exact_word(parser, "include");
+    if(result.code == RAC0A_OK) {
+
+    } else if(result.code == RAC0A_FAILED) {
+
+    } else if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         return rac0a_parse_result_error("Failed to parse include statement, expected 'include' keyword", parser->lexer.pointer);
     }
 
     string_t include_path;
-    if(rac0a_parse_string(parser, &include_path).code == RAC0A_ERROR) {
+    result = rac0a_parse_string(parser, &include_path);
+    if(result.code == RAC0A_OK) {
+
+    } else if(result.code == RAC0A_FAILED) {
+            
+    } else if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("Failed to parse include statement, expected string", parser->lexer.pointer);
+        return rac0a_parse_result_failed("Failed to parse include statement, expected string", parser->lexer.pointer);
     }
 
-    /*
-    PLUM_LOG(PLUM_INFO, "Trying to include file '%s'", include_path);
-
     string_t source = rac0_utils_read_file_string(include_path);
-    free(include_path);
 
     if(source == NULL) {
         parser->lexer = backup;
-        return rac0a_parse_result_error("Failed to open included file", parser->lexer.pointer);
+        free(include_path);
+        return rac0a_parse_result_failed("No such file or directory", parser->lexer.pointer);
     }
-    
-    rac0a_hl_statement_list_t child_hl = rac0a_parse_program(source);
 
-    for(int i = 0; i < vector_size(&child_hl); ++i)
-        vector_push(&parser->hl_statements, vector_get(&child_hl, i)); 
+    // Parse program
+    rac0a_parser_t child_parser = {
+        .lexer = (rac0a_lexer_t) {
+            .input = source,
+            .pointer = 0
+        }
+    };
+    create_vector(&child_parser.hl_statements, 1024);
 
-    free_vector(&child_hl); // we dont want to free child hl statements
+    rac0a_parse_result_t parse_result = rac0a_parse_program(&child_parser);
 
-    PLUM_LOG(PLUM_INFO, "Successfully to included file");
-    */
+    if(parse_result.code == RAC0A_OK) {
 
+    } else if(parse_result.code == RAC0A_FAILED) {
+        rac0_value_t pointer = parse_result.as.error.pointer;
+
+        rac0_value_t token_start = pointer;
+        while (isspace(source[token_start]))
+            token_start++;
+
+        rac0_value_t line = rac0a_get_line_number_from_index(source, pointer) + 2;
+        rac0_value_t column = 0;
+        rac0_value_t line_length = rac0a_get_line_length(source + token_start); 
+
+        printf("%s:%llu:%llu: \x1B[31merror\x1B[0m: %s\n", include_path, line, column, parse_result.as.error.message);
+
+        printf("   %llu | \x1B[31m", line);
+
+        for(int i = 0; i < line_length; ++i)
+            printf("%c", source[token_start + i]);
+
+        printf("\x1B[0m\n");
+
+        printf("   %llu | \x1B[31m^", line + 1);
+
+        for(int i = 0; i < line_length - 1; ++i)
+            printf("~");
+
+        printf("\x1B[0m\n");
+        
+        free(include_path);
+        return rac0a_parse_result_failed("Included from file", backup.pointer);
+    } else if(parse_result.code == RAC0A_ERROR) {
+
+    }
+
+    for(int i = 0; i < vector_size(&child_parser.hl_statements); ++i)
+        vector_push(&parser->hl_statements, vector_get(&child_parser.hl_statements, i)); 
+
+    free_vector(&child_parser.hl_statements); // we dont want to free child hl statements
+
+    free(include_path);
     return rac0a_parse_result_ok();
 }
 
@@ -686,24 +742,27 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_h
     rac0a_lexer_t backup = parser->lexer;
 
     rac0a_token_t label;
+    rac0a_parse_result_t result;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code == RAC0A_ERROR) {
+    result = rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label);
+    if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         return rac0a_parse_result_error("Failed to parse byte definition, expected label", parser->lexer.pointer);
     }
 
-    if(rac0a_parse_exact_word(parser, "db").code == RAC0A_ERROR) {
+    result = rac0a_parse_exact_word(parser, "db");
+    if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         rac0a_free_token(label);
         return rac0a_parse_result_error("Failed to parse byte definition, expected 'db' keyword", parser->lexer.pointer);
     }
 
     string_t string;
-
-    if(rac0a_parse_string(parser, &string).code == RAC0A_ERROR) {
+    result = rac0a_parse_string(parser, &string);
+    if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return rac0a_parse_result_error("Failed to parse byte definition, expected string", parser->lexer.pointer);
+        return rac0a_parse_result_failed("Failed to parse byte definition, expected string", parser->lexer.pointer);
     }
 
     value->label = label.lexeme;
@@ -719,22 +778,26 @@ rac0a_parse_result_t rac0a_parse_word_definition(rac0a_parser_t* parser, rac0a_h
     rac0a_lexer_t backup = parser->lexer;
 
     rac0a_token_t label;
+    rac0a_parse_result_t result;
 
-    if(rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label).code == RAC0A_ERROR) {
+    result = rac0a_parse_token(parser, RAC0A_TOKEN_LABEL, &label);
+    if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         return rac0a_parse_result_error("Failed to parse word definition, expected label", parser->lexer.pointer);
     }
 
-    if(rac0a_parse_exact_word(parser, "dw").code == RAC0A_ERROR) {
+    result = rac0a_parse_exact_word(parser, "dw");
+    if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         rac0a_free_token(label);
         return rac0a_parse_result_error("Failed to parse word definition, expected 'dw' keyword", parser->lexer.pointer);
     }
     
-    if(rac0a_parse_value(parser, &value->value).code == RAC0A_ERROR) {
+    result =  rac0a_parse_value(parser, &value->value);
+    if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return rac0a_parse_result_error("Failed to parse word definition, expected value", parser->lexer.pointer);
+        return rac0a_parse_result_failed("Failed to parse word definition, expected value", parser->lexer.pointer);
     }
 
     value->label = rac0a_string_copy(label.lexeme);
@@ -769,6 +832,8 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
     rac0a_token_t first_token;
     rac0a_parse_look_next_token(parser, &first_token);
 
+    rac0_value_t pointer = parser->lexer.pointer;
+
     if(first_token.type == RAC0A_TOKEN_LABEL) {
         result = rac0a_parse_byte_definition(parser, &byte_def);
         if(result.code == RAC0A_OK) {
@@ -793,7 +858,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
             rac0a_free_token(first_token);
             return rac0a_parse_result_ok();
         } else if(result.code == RAC0A_FAILED) {
-    
+            return result;
         } else if(result.code == RAC0A_ERROR) {
             // continue
         }
@@ -811,17 +876,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
         } else if(result.code == RAC0A_ERROR) {
             // continue
         }
-    
-        result = rac0a_parse_include_statement(parser);
-        if(result.code == RAC0A_OK) {
-            rac0a_free_token(first_token);
-            rac0a_parse_result_ok();
-        } else if(result.code == RAC0A_FAILED) {
-            return result;
-        } else if(result.code == RAC0A_ERROR) {
-            // continue
-        }
-        
+            
         result = rac0a_parse_instruction(parser, &inst);
         if(result.code == RAC0A_OK) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
@@ -837,10 +892,19 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
         }
 
         rac0a_free_token(first_token);
-        return rac0a_parse_result_failed("Unknown instruction", parser->lexer.pointer);
+        return rac0a_parse_result_failed("Unknown instruction", pointer);
     }
     
     rac0a_free_token(first_token);
+
+    result = rac0a_parse_include_statement(parser);
+    if(result.code == RAC0A_OK) {
+        return rac0a_parse_result_ok();
+    } else if(result.code == RAC0A_FAILED) {
+        return result;
+    } else if(result.code == RAC0A_ERROR) {
+        // continue
+    }
 
     result = rac0a_parse_constval_definition(parser, &constval);
     if(result.code == RAC0A_OK) {
@@ -853,7 +917,6 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
         return result;
     } else if(result.code == RAC0A_ERROR) {
         // continue
-        
     }
 
     result = rac0a_parse_constblock_definition(parser, &constblock);
@@ -926,7 +989,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, rac0a_hl
             return rac0a_parse_result_error("Expected '}'", 0);
         }   
 
-            PLUM_UNREACHABLE();
+             PLUM_UNREACHABLE();
         */
     }
 

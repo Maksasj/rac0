@@ -39,8 +39,10 @@ int main(int argc, char *argv[]) {
 
     char* source = rac0_utils_read_file_string(configuration.input_filename);
 
-    if(source == NULL)
+    if(source == NULL) {
+        printf("fatal error: %s: No such file or directory\n", configuration.input_filename);
         return 1;
+    }
 
     // Parse program
     rac0a_parser_t parser = {
@@ -56,9 +58,31 @@ int main(int argc, char *argv[]) {
     if(parse_result.code == RAC0A_OK) {
         
     } else if(parse_result.code == RAC0A_FAILED) {
-        printf("%s:1:1: \x1B[31merror\x1B[0m: %s\n", configuration.input_filename, parse_result.as.error.message);
-        printf("   1 | \x1B[31mdasdadas\x1B[0m\n");
-        printf("   2 | \x1B[31m^~~~~~~~\x1B[0m\n");
+        rac0_value_t pointer = parse_result.as.error.pointer;
+
+        rac0_value_t token_start = pointer;
+        while (isspace(source[token_start]))
+            token_start++;
+
+        rac0_value_t line = rac0a_get_line_number_from_index(source, pointer) + 2;
+        rac0_value_t column = 0;
+        rac0_value_t line_length = rac0a_get_line_length(source + token_start); 
+
+        printf("%s:%llu:%llu: \x1B[31merror\x1B[0m: %s\n", configuration.input_filename, line, column, parse_result.as.error.message);
+
+        printf("   %llu | \x1B[31m", line);
+
+        for(int i = 0; i < line_length; ++i)
+            printf("%c", source[token_start + i]);
+
+        printf("\x1B[0m\n");
+
+        printf("   %llu | \x1B[31m^", line + 1);
+
+        for(int i = 0; i < line_length - 1; ++i)
+            printf("~");
+
+        printf("\x1B[0m\n");
     } else if(parse_result.code == RAC0A_ERROR) {
         
     }
