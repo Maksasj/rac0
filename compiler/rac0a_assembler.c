@@ -108,7 +108,7 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
                 rac0a_constval_hl_info_t* info = rac0a_get_constval_hl_info(&constvalues, hl_instruction->value.as.constval_label);
 
                 if(info == NULL) {
-                    PLUM_LOG(PLUM_ERROR, "Constval with '%s' name is not defined", hl_instruction->value.as.constval_label);
+                    PLUM_LOG(PLUM_ERROR, "Constval with '%s' name is not defined %d", hl_instruction->value.as.constval_label, statement->pointer);
                 } else {
                     hl_instruction->value.as.value = info->value;
                     hl_instruction->value.type = RAC0A_HL_VALUE_TYPE_NUMBER;
