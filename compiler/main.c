@@ -1,11 +1,7 @@
 #include "rac0_utils.h"
 #include "rac0a_assembler.h"
 
-typedef struct {
-    char* input_filename;
-    char* output_filename;
-    rac0_value_t dump;
-} rac0a_compiler_configuration_t;
+
 
 void rac0a_print_help(char* filename) {
     printf("Usage: %s [options] <input file> <output file>\n", filename);
@@ -23,6 +19,7 @@ int main(int argc, char *argv[]) {
     rac0a_compiler_configuration_t configuration;
     configuration.input_filename = argv[1];
     configuration.output_filename = argv[2];
+    configuration.dump = 0;
 
     string_set_t arguments;
     arguments.items.items = (void**) argv;
@@ -30,12 +27,12 @@ int main(int argc, char *argv[]) {
     arguments.items.capacity = argc;
 
     if(string_set_has(&arguments, "--help")) {
-        rac0a_print_help( argv[0]);
+        rac0a_print_help(argv[0]);
         return 0;
     }
 
     if(string_set_has(&arguments, "-dump"))
-        PLUM_LOG(PLUM_EXPERIMENTAL, "Dump logs");
+        configuration.dump = 1;
 
     char* source = rac0_utils_read_file_string(configuration.input_filename);
 
@@ -87,13 +84,14 @@ int main(int argc, char *argv[]) {
         
     }
 
-    rac0a_log_hl_statements("0_parse_pass.rac0a.dump.txt", &parser.hl_statements);
+    if(configuration.dump)
+        rac0a_log_hl_statements("0_parse_pass.rac0a.dump.txt", &parser.hl_statements);
 
     // Assemble program
     byte_vector_t program;
     create_byte_vector(&program, 1000);
 
-    rac0a_assemble_result_t assemble_result = rac0a_assemble_program(&program, &parser.hl_statements);
+    rac0a_assemble_result_t assemble_result = rac0a_assemble_program(&configuration, &program, &parser.hl_statements);
 
     // Save program
     FILE *out_file = fopen(configuration.output_filename, "wb");

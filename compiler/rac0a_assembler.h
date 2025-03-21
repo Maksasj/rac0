@@ -4,6 +4,12 @@
 #include "rac0a_parser.h"
 
 typedef struct {
+    char* input_filename;
+    char* output_filename;
+    rac0_value_t dump;
+} rac0a_compiler_configuration_t;
+
+typedef struct {
     rac0a_result_code_t code;
 
     union {
@@ -43,6 +49,6 @@ rac0a_hl_statement_list_t rac0a_assemble_run_1_pass(rac0a_hl_statement_list_t* i
 rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* input);
 byte_vector_t rac0a_assemble_run_final_pass(rac0a_hl_statement_list_t* input);
 
-rac0a_assemble_result_t rac0a_assemble_program(byte_vector_t* vector, rac0a_hl_statement_list_t* hl_statements);
+rac0a_assemble_result_t rac0a_assemble_program(rac0a_compiler_configuration_t* configuration, byte_vector_t* vector, rac0a_hl_statement_list_t* hl_statements);
 
 #endif

@@ -316,14 +316,18 @@ byte_vector_t rac0a_assemble_run_final_pass(rac0a_hl_statement_list_t* input) {
     return result;
 }
 
-rac0a_assemble_result_t rac0a_assemble_program(byte_vector_t* result, rac0a_hl_statement_list_t* hl_statements) {
+rac0a_assemble_result_t rac0a_assemble_program(rac0a_compiler_configuration_t* configuration, byte_vector_t* result, rac0a_hl_statement_list_t* hl_statements) {
     // first pass we collect all labels and constvalues
     rac0a_hl_statement_list_t pass1 = rac0a_assemble_run_1_pass(hl_statements);
-    rac0a_log_hl_statements("1_assemble_pass.rac0a.dump.txt", &pass1);
+
+    if(configuration->dump)
+        rac0a_log_hl_statements("1_assemble_pass.rac0a.dump.txt", &pass1);
 
     // then we calculate actual addresses and replace all label references
     rac0a_hl_statement_list_t pass2 = rac0a_assemble_run_2_pass(&pass1);
-    rac0a_log_hl_statements("2_assemble_pass.rac0a.dump.txt", &pass2);
+
+    if(configuration->dump)
+        rac0a_log_hl_statements("2_assemble_pass.rac0a.dump.txt", &pass2);
 
     *result = rac0a_assemble_run_final_pass(&pass2);
 
