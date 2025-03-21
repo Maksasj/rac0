@@ -19,7 +19,7 @@ void rac0a_free_hl_instruction_statement(rac0a_hl_instruction_statement_t statem
     } else if(statement.inst.type == RAC0A_HL_INSTRUCTION_TYPE_CONSTLABEL) {
         free(statement.inst.as.constlabel);
     } else {
-        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_instruction_statement: instruction type is not implemented");
+        PLUM_UNREACHABLE();
     }
 
     if(statement.value.type == RAC0A_HL_VALUE_TYPE_NUMBER) {
@@ -31,7 +31,7 @@ void rac0a_free_hl_instruction_statement(rac0a_hl_instruction_statement_t statem
     } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_NONE) {
         // nothing
     } else {
-        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_instruction_statement: instruction value is not implemented");
+        PLUM_UNREACHABLE();
     }
 }
 
@@ -45,7 +45,7 @@ void rac0a_free_hl_word_def_statement(rac0a_hl_word_def_statement_t statement) {
     } else if(statement.value.type == RAC0A_HL_VALUE_TYPE_NONE) {
         // nothing
     } else {
-        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_word_def_statement: instruction value is not implemented");
+        PLUM_UNREACHABLE();
     }
 
     free(statement.label);
@@ -70,7 +70,7 @@ void rac0a_free_hl_statement(rac0a_hl_statement_t* statement) {
     } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {
         rac0a_free_hl_byte_def_statement(statement->as.byte_def);
     } else {
-        PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_free_hl_statement: hl statement type is not implemented");
+        PLUM_UNREACHABLE();
     }
 
     free(statement);
@@ -132,7 +132,7 @@ void rac0a_log_hl_statements_file(FILE* file, rac0a_hl_statement_list_t* list) {
         } else if(statement->type == RAC0A_HL_TYPE_BYTE_DEF) {            
             fprintf(file, "[ %.6d ] [ BYDEF ] \"%s\"\n", i, statement->as.byte_def.array);
         } else {
-            PLUM_LOG(PLUM_ERROR, "Unreachable in rac0a_log_hl_statements_file: hl statement type is not implemented");
+            PLUM_UNREACHABLE();
         }
     }
 }

@@ -926,7 +926,7 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, rac0a_hl
             return rac0a_parse_result_error("Expected '}'", 0);
         }   
 
-        return rac0a_parse_result_error("Unreachable", 0);
+            PLUM_UNREACHABLE();
         */
     }
 
@@ -1082,47 +1082,22 @@ rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser) {
     return rac0a_parse_result_ok();
 }
 
-rac0a_hl_statement_list_t rac0a_parse_program(const string_t input) {
-    rac0a_parser_t parser = {
-        .lexer = (rac0a_lexer_t) {
-            .input = input,
-            .pointer = 0
-        }
-    };
-
-    create_vector(&parser.hl_statements, 1024);
-
+rac0a_parse_result_t rac0a_parse_program(rac0a_parser_t* parser) {
     rac0a_parse_result_t result;
-    result = rac0a_parse_statement_list(&parser, &parser.hl_statements);
+    result = rac0a_parse_statement_list(parser, &parser->hl_statements);
         
     if(result.code == RAC0A_OK) {
 
     } else if(result.code == RAC0A_FAILED) {
-        PLUM_LOG(PLUM_ERROR, "%s", result.as.error.message);
+        return result;
     } if(result.code == RAC0A_ERROR) {
 
     }
 
-    result = rac0a_parse_eof(&parser);
+    result = rac0a_parse_eof(parser);
     if(result.code == RAC0A_OK) {
 
     }
 
-
-    /*
-    while(1) {
-        if(rac0a_parse_eof(&parser).code == RAC0A_OK)
-            break;
-        
-        rac0a_parse_result_t result = rac0a_parse_statement_list(&parser, &parser.hl_statements);
-        
-        if(result.code == RAC0A_OK)
-            continue;
-        
-        PLUM_LOG(PLUM_ERROR, "Failed to parse program with error: %s", result.as.error.message);
-        break;
-    }
-    */
-
-    return parser.hl_statements;
+    return rac0a_parse_result_ok();
 }
