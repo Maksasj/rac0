@@ -22,16 +22,25 @@ int main(int argc, char *argv[]) {
     }
 
     rac0_cpu_t cpu = (rac0_cpu_t) {
-        .pc = 0,
-        .device = 0,
-        .halted = 0,
         .stack = {
             .top = 0 
-        }
+        },
+
+        .pc = 0,
+        .device = 0,
+
+        .idt = 0,
+        .idts = 0,
+        .iret = 0,
+    
+        .status = 0
     };  
 
     rac0_memory_t memory = (rac0_memory_t) {
-        .memory = (rac0_byte_t*) calloc(sizeof(rac0_byte_t) * RAC0_MEGABYTE_SIZE, 1)  
+        .memory = (rac0_byte_t*) calloc(sizeof(rac0_byte_t) * RAC0_MEGABYTE_SIZE, 1),
+        .ptba = 0x0,
+        .pts = 0x0,
+        .ptps = 0x0
     };
 
     rac0_byte_t* byte_code = (rac0_byte_t*) rac0_utils_read_file_string(argv[1]);
@@ -71,7 +80,7 @@ int main(int argc, char *argv[]) {
 
     PLUM_LOG(PLUM_INFO, "CPU started");
 
-    while(!cpu.halted)
+    while(!rac0_status_bit_is_set(&cpu, RAC0_STATUS_HALTED_BIT_MASK))
         rac0_cpu_inst_cycle(&cpu, &memory, devices);
 
     PLUM_LOG(PLUM_INFO, "CPU halted");

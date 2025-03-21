@@ -23,6 +23,11 @@ rac0_value_t rac0_stack_get_top(rac0_stack_t* stack);
 rac0_value_t rac0_stack_get_next(rac0_stack_t* stack);
 void rac0_stack_drop(rac0_stack_t* stack);
 
+#define RAC0_STATUS_MODE_BIT_MASK       ((rac0_value_t) (0b0000000000000000000000000000000000000000000000000000000000000001))
+#define RAC0_STATUS_HALTED_BIT_MASK     ((rac0_value_t) (0b0000000000000000000000000000000000000000000000000000000000000010))
+#define RAC0_STATUS_TIMER_MODE_BIT_MASK ((rac0_value_t) (0b0000000000000000000000000000000000000000000000000000000000000100))
+#define RAC0_STATUS_PAGE_MODE_BIT_MASK  ((rac0_value_t) (0b0000000000000000000000000000000000000000000000000000000000001000))
+
 typedef struct {
     // stack
     rac0_stack_t stack;
@@ -30,15 +35,24 @@ typedef struct {
     // registers
     rac0_value_t pc;
     rac0_value_t device; 
-    rac0_value_t halted;
 
     // idt
-    rac0_value_t idt; // pointer to interupt table
+    rac0_value_t idt;
+    rac0_value_t idts; // pointer to interupt table
     rac0_value_t iret; // interupt return pointer
+
+    rac0_value_t status;
 } rac0_cpu_t;
+
+void rac0_set_status_bit(rac0_cpu_t* cpu, rac0_value_t mask, rac0_value_t bool_value);
+rac0_value_t rac0_status_bit_is_set(rac0_cpu_t* cpu, rac0_value_t mask);
 
 typedef struct {    
     rac0_byte_t* memory;
+
+    rac0_value_t ptba;
+    rac0_value_t pts;
+    rac0_value_t ptps;
 } rac0_memory_t;
 
 rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory);

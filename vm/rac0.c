@@ -33,6 +33,17 @@ void rac0_stack_drop(rac0_stack_t* stack) {
     --stack->top;
 }
 
+void rac0_set_status_bit(rac0_cpu_t* cpu, rac0_value_t mask, rac0_value_t bool_value) {
+    if(bool_value)
+        cpu->status |= mask;
+    else
+        cpu->status &= ~mask;
+}
+
+rac0_value_t rac0_status_bit_is_set(rac0_cpu_t* cpu, rac0_value_t mask) {
+    return cpu->status & mask;
+}
+
 rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory) {
     return *((rac0_inst_t*) &memory->memory[pc]);
 }
@@ -42,10 +53,11 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
  
     // nikita ---------------------------------------------------------------------------
     if(inst.opcode == RAC0_HALT_OPCODE) { // cpu
-        cpu->halted = 1;
+        rac0_set_status_bit(cpu, RAC0_STATUS_HALTED_BIT_MASK, 1);
         goto inc;
     } else if(inst.opcode == RAC0_WAIT_OPCODE) {
         PLUM_LOG(PLUM_ERROR, "Opcode WAIT is not implemented");
+        // Todo, probably use rac0_set_status_bit function
     } else if(inst.opcode == RAC0_SETIDTT_OPCODE) {
         PLUM_LOG(PLUM_ERROR, "Opcode SETIDTT is not implemented");
     } else if(inst.opcode == RAC0_SETIDTST_OPCODE) {
@@ -142,18 +154,33 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         goto inc;
     } else if(inst.opcode == RAC0_NOT_OPCODE) { 
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
-        rac0_stack_push(&cpu->stack, !top);
+        rac0_stack_push(&cpu->stack, ~top);
         goto inc;
     } else if(inst.opcode == RAC0_AND_OPCODE) { 
-        PLUM_LOG(PLUM_ERROR, "Opcode AND is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top & next);
+        goto inc;
     } else if(inst.opcode == RAC0_OR_OPCODE) { 
-        PLUM_LOG(PLUM_ERROR, "Opcode OR is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top | next);
+        goto inc;
     } else if(inst.opcode == RAC0_NAND_OPCODE) { 
-        PLUM_LOG(PLUM_ERROR, "Opcode NAND is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, ~(top & next));
+        goto inc;
     } else if(inst.opcode == RAC0_NOR_OPCODE) { 
-        PLUM_LOG(PLUM_ERROR, "Opcode NOR is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, ~(top | next));
+        goto inc;
     } else if(inst.opcode == RAC0_XOR_OPCODE) { 
-        PLUM_LOG(PLUM_ERROR, "Opcode XOR is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_push(&cpu->stack, top ^ next);
+        goto inc;
     } else if(inst.opcode == RAC0_JMPA_OPCODE) { // flow
         cpu->pc = inst.value;
         goto cont;
@@ -166,15 +193,32 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         if(top == 0) {
             cpu->pc = inst.value;
             goto cont;
-        } else {
+        } else
             goto inc;
-        }
     } else if(inst.opcode == RAC0_JNZA_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode JNZA is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        
+        if(top != 0) {
+            cpu->pc = inst.value;
+            goto cont;
+        } else
+            goto inc;
     } else if(inst.opcode == RAC0_JNEGA_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode JNEGA is not implemented");
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        
+        if(top < 0) {
+            cpu->pc = inst.value;
+            goto cont;
+        } else
+            goto inc;
     } else if(inst.opcode == RAC0_JPOSA_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode JPOSA is not implemented"); 
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        
+        if(top > 0) {
+            cpu->pc = inst.value;
+            goto cont;
+        } else
+            goto inc;
     } else if(inst.opcode == RAC0_SETDA_OPCODE) { // device
         cpu->device = inst.value;
         goto inc;
