@@ -1,0 +1,2 @@
+number dw 0x110
+number db 0x101

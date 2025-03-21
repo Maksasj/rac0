@@ -13,8 +13,8 @@ int main(int argc, char *argv[]) {
         return 1;
 
     rac0a_hl_statement_list_t hl_statements = rac0a_parse_program(source);
-    PLUM_LOG(PLUM_INFO, "Parsed program");
-    PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&hl_statements));
+    // PLUM_LOG(PLUM_INFO, "Parsed program");
+    // PLUM_LOG(PLUM_INFO, "Parser generated %d hl statements", vector_size(&hl_statements));
 
     rac0a_log_hl_statements("0_parse_pass.rac0a.dump.txt", &hl_statements);
 

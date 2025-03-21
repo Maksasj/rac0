@@ -164,7 +164,7 @@ rac0a_hl_statement_list_t rac0a_assemble_run_2_pass(rac0a_hl_statement_list_t* i
     for(int i = 0; i < vector_size(input); ++i) {
         rac0a_hl_statement_t* statement = vector_get(input, i);
 
-        PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
+        // PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
 
         if(statement->type == RAC0A_HL_TYPE_CONSTVAL_DECL) {
 
@@ -258,7 +258,7 @@ byte_vector_t rac0a_assemble_run_final_pass(rac0a_hl_statement_list_t* input) {
     for(int i = 0; i < vector_size(input); ++i) {
         rac0a_hl_statement_t* statement = vector_get(input, i);
 
-        PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
+        // PLUM_LOG(PLUM_DEBUG, "%d hl: [ %s ]", i, RAC0A_HL_STRING[statement->type]);
 
         if(statement->type == RAC0A_HL_TYPE_CONSTVAL_DECL) {
 

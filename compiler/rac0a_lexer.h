@@ -8,7 +8,8 @@
 
 typedef enum {
     RAC0A_OK,
-    RAC0A_ERROR
+    RAC0A_FAILED,
+    RAC0A_ERROR,
 } rac0a_result_code_t;
 
 typedef enum {

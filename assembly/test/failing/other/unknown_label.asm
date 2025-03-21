@@ -1,0 +1,2 @@
+l:
+    jmpa &pog

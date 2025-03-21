@@ -24,6 +24,7 @@ typedef struct {
 } rac0a_parse_result_t;
 
 rac0a_parse_result_t rac0a_parse_result_ok();
+rac0a_parse_result_t rac0a_parse_result_failed();
 rac0a_parse_result_t rac0a_parse_result_error(const char* message, rac0_u64_t pointer);
 
 typedef struct {

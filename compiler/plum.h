@@ -11,6 +11,8 @@
 #define PLUM_WHT  "\x1B[37m"
 #define PLUM_GRA  "\x1B[90m"
 
+static char plum_enable_logger = 0;
+
 typedef enum PlumLogLevel {
     PLUM_TRACE,
     PLUM_INFO,
