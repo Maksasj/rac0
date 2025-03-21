@@ -79,11 +79,14 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_stack_push(&cpu->stack, cpu->pc);
         goto inc;
     } else if(inst.opcode == RAC0_PUSHSS_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode PUSHSS is not implemented");
+        rac0_stack_push(&cpu->stack, cpu->stack.top);
+        goto inc;
     } else if(inst.opcode == RAC0_PUSHDC_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode PUSHDC is not implemented");
+        rac0_stack_push(&cpu->stack, cpu->device);
+        goto inc;
     } else if(inst.opcode == RAC0_PUSHMS_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode PUSHMS is not implemented");
+        rac0_stack_push(&cpu->stack, RAC0_MEGABYTE_SIZE);
+        goto inc;
     } else if(inst.opcode == RAC0_DUPT_OPCODE) {
         rac0_stack_push(&cpu->stack, rac0_stack_get_top(&cpu->stack));
         goto inc;
