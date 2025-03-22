@@ -838,7 +838,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
         result = rac0a_parse_byte_definition(parser, &byte_def);
         if(result.code == RAC0A_OK) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-            st->pointer = parser->lexer.pointer;
+            st->pointer = pointer;
             st->type = RAC0A_HL_TYPE_BYTE_DEF;
             st->as.byte_def = byte_def;
             vector_push(list, st);
@@ -853,7 +853,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
         result = rac0a_parse_word_definition(parser, &word_def);
         if(result.code == RAC0A_OK) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-            st->pointer = parser->lexer.pointer;
+            st->pointer = pointer;
             st->type = RAC0A_HL_TYPE_WORD_DEF;
             st->as.word_def = word_def;
             vector_push(list, st);
@@ -868,7 +868,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
         result = rac0a_parse_label_definition(parser, &label);
         if(result.code == RAC0A_OK) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-            st->pointer = parser->lexer.pointer;
+            st->pointer = pointer;
             st->type = RAC0A_HL_TYPE_LABEL;
             st->as.label = label;
             vector_push(list, st);
@@ -883,7 +883,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
         result = rac0a_parse_instruction(parser, &inst);
         if(result.code == RAC0A_OK) {
             rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-            st->pointer = parser->lexer.pointer;
+            st->pointer = pointer;
             st->type = RAC0A_HL_TYPE_INSTRUCTION;
             st->as.instruction = inst;
             vector_push(list, st);
@@ -913,7 +913,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
     result = rac0a_parse_constval_definition(parser, &constval);
     if(result.code == RAC0A_OK) {
         rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-        st->pointer = parser->lexer.pointer;
+        st->pointer = pointer;
         st->type = RAC0A_HL_TYPE_CONSTVAL_DECL;
         st->as.constval = constval;
         vector_push(list, st);
@@ -927,7 +927,7 @@ rac0a_parse_result_t rac0a_parse_statement(rac0a_parser_t* parser, rac0a_hl_stat
     result = rac0a_parse_constblock_definition(parser, &constblock);
     if(result.code == RAC0A_OK) {
         rac0a_hl_statement_t* st = (rac0a_hl_statement_t*) malloc(sizeof(rac0a_hl_statement_t));
-        st->pointer = parser->lexer.pointer;
+        st->pointer = pointer;
         st->type = RAC0A_HL_TYPE_CONSTBLOCK_DECL;
         st->as.constblock = constblock;
         vector_push(&parser->hl_statements, st);
