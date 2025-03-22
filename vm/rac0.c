@@ -59,19 +59,37 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         PLUM_LOG(PLUM_ERROR, "Opcode WAIT is not implemented");
         // Todo, probably use rac0_set_status_bit function
     } else if(inst.opcode == RAC0_SETIDTT_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SETIDTT is not implemented");
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        cpu->idt = value;
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
     } else if(inst.opcode == RAC0_SETIDTST_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SETIDTST is not implemented");
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        cpu->idts = value;
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
     } else if(inst.opcode == RAC0_SETPTBAT_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SETPTBAT is not implemented");
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        memory->ptba = value;
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
     } else if(inst.opcode == RAC0_SETPTST_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SETPTST is not implemented");
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        memory->pts = value;
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
     } else if(inst.opcode == RAC0_SETPTPST_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SETPTPST is not implemented");
-    } else if(inst.opcode == RAC0_SETTT_OPCODE) {
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        memory->ptps = value;
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
+    } else if(inst.opcode == RAC0_SETTT_OPCODE) { // TIMER register - no value in header. Where????
         PLUM_LOG(PLUM_ERROR, "Opcode SETTT is not implemented");
     } else if(inst.opcode == RAC0_SETSTT_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode SETSTT is not implemented");
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        cpu->status = value;
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
     } else if(inst.opcode == RAC0_PUSHA_OPCODE) { // stack
         rac0_stack_push(&cpu->stack, inst.value);
         goto inc;
@@ -105,13 +123,29 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_stack_push(&cpu->stack, next);
         goto inc;
     } else if(inst.opcode == RAC0_STORE_OPCODE) { // memory
-        PLUM_LOG(PLUM_ERROR, "Opcode STORE is not implemented");
+        rac0_value_t address = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t value = rac0_stack_get_next(&cpu->stack);
+        *((rac0_value_t*) &memory->memory[address]) = value;
+        rac0_stack_drop(&cpu->stack);
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
     } else if(inst.opcode == RAC0_STOREA_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode STOREA is not implemented");
+        rac0_value_t address = inst.value;
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        *((rac0_value_t*) &memory->memory[address]) = value;
+        rac0_stack_drop(&cpu->stack);
+        goto inc;
     } else if(inst.opcode == RAC0_LOAD_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode LOAD is not implemented");
+        rac0_value_t address = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t value = *((rac0_value_t*) &memory->memory[address]);
+        rac0_stack_drop(&cpu->stack);
+        rac0_stack_push(&cpu->stack, value);
+        goto inc;
     } else if(inst.opcode == RAC0_LOADA_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode LOADA is not implemented");
+        rac0_value_t address = inst.value;
+        rac0_value_t value = *((rac0_value_t*) &memory->memory[address]);
+        rac0_stack_push(&cpu->stack, value);
+        goto inc;
     } else if(inst.opcode == RAC0_ADD_OPCODE) { // arithmetic
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
