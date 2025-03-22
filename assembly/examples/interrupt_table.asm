@@ -14,9 +14,11 @@ print_top: // (value pc)
     
     jmpt
 
-interrupt_table:
+interrupt_table_0:
     _int_0 dw &int0
     _int_1 dw &int1
+
+interrupt_table_1:
     _int_2 dw &int2
     _int_3 dw &int3
 
@@ -57,17 +59,26 @@ int3:
     iret 0x0
 
 code:
-    pusha &interrupt_table
+    pusha &interrupt_table_0
     setidtt
     drop
     
-    pusha 0x4
+    pusha 0x2
     setidtst
     drop
     
     int 0x0
     int 0x1
-    int 0x2
-    int 0x3
+
+    pusha &interrupt_table_1
+    setidtt
+    drop
+    
+    pusha 0x2
+    setidtst
+    drop
+    
+    int 0x0
+    int 0x1
 
     halt
