@@ -677,6 +677,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     PARSE_INSTRUCTION_NOARG("setptst", RAC0_SETPTST_OPCODE);
     PARSE_INSTRUCTION_NOARG("setptpst", RAC0_SETPTPST_OPCODE);
     PARSE_INSTRUCTION_NOARG("settt", RAC0_SETTT_OPCODE);
+    PARSE_INSTRUCTION_NOARG("setirett", RAC0_SETIRETT_OPCODE);
     PARSE_INSTRUCTION_NOARG("setstt", RAC0_SETSTT_OPCODE);
 
     // stack
@@ -685,6 +686,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     PARSE_INSTRUCTION_NOARG("pushss", RAC0_PUSHSS_OPCODE);
     PARSE_INSTRUCTION_NOARG("pushdc", RAC0_PUSHDC_OPCODE);
     PARSE_INSTRUCTION_NOARG("pushms", RAC0_PUSHMS_OPCODE);
+    PARSE_INSTRUCTION_NOARG("pushiret", RAC0_PUSHIRET_OPCODE);
     PARSE_INSTRUCTION_NOARG("dupt", RAC0_DUPT_OPCODE);
     PARSE_INSTRUCTION_NOARG("dupn", RAC0_DUPN_OPCODE);
     PARSE_INSTRUCTION_NOARG("drop", RAC0_DROP_OPCODE);

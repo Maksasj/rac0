@@ -15,12 +15,28 @@ print_top: // (value pc)
     jmpt
 
 interrupt_table_0:
-    _int_0 dw &int0
-    _int_1 dw &int1
+    _0_int_timer dw 0x0
+    _0_int_invinst dw 0x0
+    _0_int_priv dw 0x0
+    _0_int_invint dw 0x0
+    _0_int_invpacc dw 0x0
+    _0_int_invdev dw 0x0
+    _0_int_devamch dw 0x0
+
+    _0_int_0 dw &int0
+    _0_int_1 dw &int1
 
 interrupt_table_1:
-    _int_2 dw &int2
-    _int_3 dw &int3
+    _1_int_timer dw 0x0
+    _1_int_invinst dw 0x0
+    _1_int_priv dw 0x0
+    _1_int_invint dw 0x0
+    _1_int_invpacc dw 0x0
+    _1_int_invdev dw 0x0
+    _1_int_devamch dw 0x0
+
+    _1_int_0 dw &int2
+    _1_int_1 dw &int3
 
 int0:
     pusha 0x0
@@ -63,7 +79,7 @@ code:
     setidtt
     drop
     
-    pusha 0x2
+    pusha 0x9
     setidtst
     drop
     
@@ -74,7 +90,7 @@ code:
     setidtt
     drop
     
-    pusha 0x2
+    pusha 0x9
     setidtst
     drop
     
