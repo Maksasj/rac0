@@ -56,39 +56,35 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_set_status_bit(cpu, RAC0_STATUS_HALTED_BIT_MASK, 1);
         goto inc;
     } else if(inst.opcode == RAC0_WAIT_OPCODE) {
-        PLUM_LOG(PLUM_ERROR, "Opcode WAIT is not implemented");
-        // Todo, probably use rac0_set_status_bit function
+        rac0_set_status_bit(cpu, RAC0_STATUS_TIMER_MODE_BIT_MASK, 1);
+        goto inc;
     } else if(inst.opcode == RAC0_SETIDTT_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         cpu->idt = value;
-        rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_SETIDTST_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         cpu->idts = value;
-        rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_SETPTBAT_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         memory->ptba = value;
-        rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_SETPTST_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         memory->pts = value;
-        rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_SETPTPST_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         memory->ptps = value;
-        rac0_stack_drop(&cpu->stack);
         goto inc;
-    } else if(inst.opcode == RAC0_SETTT_OPCODE) { // TIMER register - no value in header. Where????
-        PLUM_LOG(PLUM_ERROR, "Opcode SETTT is not implemented");
+    } else if(inst.opcode == RAC0_SETTT_OPCODE) { // TIMER register
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        cpu->timer = value;
+        goto inc;
     } else if(inst.opcode == RAC0_SETSTT_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         cpu->status = value;
-        rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_PUSHA_OPCODE) { // stack
         rac0_stack_push(&cpu->stack, inst.value);
@@ -117,8 +113,6 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
     } else if(inst.opcode == RAC0_SWAP_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
-        rac0_stack_drop(&cpu->stack);
-        rac0_stack_drop(&cpu->stack);
         rac0_stack_push(&cpu->stack, top);
         rac0_stack_push(&cpu->stack, next);
         goto inc;
@@ -126,19 +120,15 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_value_t address = rac0_stack_get_top(&cpu->stack);
         rac0_value_t value = rac0_stack_get_next(&cpu->stack);
         *((rac0_value_t*) &memory->memory[address]) = value;
-        rac0_stack_drop(&cpu->stack);
-        rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_STOREA_OPCODE) {
         rac0_value_t address = inst.value;
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         *((rac0_value_t*) &memory->memory[address]) = value;
-        rac0_stack_drop(&cpu->stack);
         goto inc;
     } else if(inst.opcode == RAC0_LOAD_OPCODE) {
         rac0_value_t address = rac0_stack_get_top(&cpu->stack);
         rac0_value_t value = *((rac0_value_t*) &memory->memory[address]);
-        rac0_stack_drop(&cpu->stack);
         rac0_stack_push(&cpu->stack, value);
         goto inc;
     } else if(inst.opcode == RAC0_LOADA_OPCODE) {
