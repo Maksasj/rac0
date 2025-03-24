@@ -110,8 +110,8 @@ int_timer:
     int_timer_continue_1:
     // process is not in a table
 
-    // setirett
     int_timer_return:
+    setirett
     iret 0x0
 
 print_top: // (value pc)
