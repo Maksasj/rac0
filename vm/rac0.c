@@ -48,11 +48,9 @@ rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory) {
     return *((rac0_inst_t*) &memory->memory[pc]);
 }
 
-void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* devices) {
+void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_selector_t* device_selector) {
     rac0_inst_t inst = rac0_fetch_inst(cpu->pc, memory);
- 
 
-    // timer
     if(rac0_status_bit_is_set(cpu, RAC0_STATUS_TIMER_MODE_BIT_MASK)) {
         --cpu->timer;
     
@@ -74,36 +72,36 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_set_status_bit(cpu, RAC0_STATUS_TIMER_MODE_BIT_MASK, 1);
         goto inc;
     } else if(inst.opcode == RAC0_SETIDTT_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        cpu->idt = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        cpu->idt = top;
         goto inc;
     } else if(inst.opcode == RAC0_SETIDTST_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        cpu->idts = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        cpu->idts = top;
         goto inc;
     } else if(inst.opcode == RAC0_SETPTBAT_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        memory->ptba = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        memory->ptba = top;
         goto inc;
     } else if(inst.opcode == RAC0_SETPTST_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        memory->pts = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        memory->pts = top;
         goto inc;
     } else if(inst.opcode == RAC0_SETPTPST_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        memory->ptps = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        memory->ptps = top;
         goto inc;
     } else if(inst.opcode == RAC0_SETTT_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        cpu->timer = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        cpu->timer = top;
         goto inc;
     } else if(inst.opcode == RAC0_SETIRETT_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        cpu->iret = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        cpu->iret = top;
         goto inc;
     } else if(inst.opcode == RAC0_SETSTT_OPCODE) {
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        cpu->status = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        cpu->status = top;
         goto inc;
     } else if(inst.opcode == RAC0_PUSHA_OPCODE) { // stack
         rac0_stack_push(&cpu->stack, inst.value);
@@ -115,7 +113,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_stack_push(&cpu->stack, cpu->stack.top);
         goto inc;
     } else if(inst.opcode == RAC0_PUSHDC_OPCODE) {
-        rac0_stack_push(&cpu->stack, cpu->device);
+        rac0_stack_push(&cpu->stack, device_selector->device);
         goto inc;
     } else if(inst.opcode == RAC0_PUSHMS_OPCODE) {
         rac0_stack_push(&cpu->stack, RAC0_MEGABYTE_SIZE); // todo lets memory struct have something like a memory size variable
@@ -135,6 +133,8 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
     } else if(inst.opcode == RAC0_SWAP_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_stack_drop(&cpu->stack);
+        rac0_stack_drop(&cpu->stack);
         rac0_stack_push(&cpu->stack, top);
         rac0_stack_push(&cpu->stack, next);
         goto inc;
@@ -145,8 +145,8 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         goto inc;
     } else if(inst.opcode == RAC0_STOREA_OPCODE) {
         rac0_value_t address = inst.value;
-        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
-        *((rac0_value_t*) &memory->memory[address]) = value;
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        *((rac0_value_t*) &memory->memory[address]) = top;
         goto inc;
     } else if(inst.opcode == RAC0_LOAD_OPCODE) {
         rac0_value_t address = rac0_stack_get_top(&cpu->stack);
@@ -269,30 +269,30 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         } else
             goto inc;
     } else if(inst.opcode == RAC0_SETDA_OPCODE) { // device
-        cpu->device = inst.value;
+        device_selector->device = inst.value;
         goto inc;
     } else if(inst.opcode == RAC0_SETDT_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
-        cpu->device = top;
+        device_selector->device = top;
         goto inc;
     } else if(inst.opcode == RAC0_FETCHDA_OPCODE) {
-        rac0_device_t device = devices[cpu->device];
+        rac0_device_t device = device_selector->devices[device_selector->device];
         rac0_value_t value = (*device.pool)(device.device_data, inst.value);
         rac0_stack_push(&cpu->stack, value);
     } else if(inst.opcode == RAC0_FETCHDT_OPCODE) {
-        rac0_device_t device = devices[cpu->device];
+        rac0_device_t device = device_selector->devices[device_selector->device];
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t value = (*device.pool)(device.device_data, top);
         rac0_stack_push(&cpu->stack, value);
     } else if(inst.opcode == RAC0_PUTDA_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
-        rac0_device_t device = devices[cpu->device];
+        rac0_device_t device = device_selector->devices[device_selector->device];
         (*device.push)(device.device_data, inst.value, top);
         goto inc;
     } else if(inst.opcode == RAC0_PUTDT_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
-        rac0_device_t device = devices[cpu->device];
+        rac0_device_t device = device_selector->devices[device_selector->device];
         (*device.push)(device.device_data, top, next);
     } else if(inst.opcode == RAC0_INT_OPCODE) { // interrupt
         rac0_value_t* idt = (rac0_value_t*) (memory->memory + cpu->idt);
@@ -316,6 +316,20 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
 
     cont:
 
-    PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, cpu->device);
-    PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
+    // PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, device_selector->device);
+    // PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
+}
+
+void rac0_vm_cycle(rac0_vm_t* vm) {
+    rac0_cpu_t* cpu = vm->cpu; 
+    rac0_memory_t* memory = vm->memory;
+    rac0_device_selector_t* device_selector = vm->device_selector;
+
+    rac0_cpu_inst_cycle(cpu, memory, device_selector);
+}   
+
+rac0_value_t rac0_vm_halted(rac0_vm_t* vm) {
+    rac0_cpu_t* cpu = vm->cpu; 
+    
+    return rac0_status_bit_is_set(cpu, RAC0_STATUS_HALTED_BIT_MASK);
 }

@@ -34,7 +34,6 @@ typedef struct {
 
     // registers
     rac0_value_t pc;
-    rac0_value_t device; 
 
     // idt
     rac0_value_t idt;
@@ -56,7 +55,22 @@ typedef struct {
     rac0_value_t ptps;
 } rac0_memory_t;
 
+typedef struct {
+    rac0_device_t* devices;
+    rac0_value_t device; 
+    rac0_value_t devc; 
+} rac0_device_selector_t;
+
+typedef struct {
+    rac0_cpu_t* cpu;
+    rac0_memory_t* memory;
+    rac0_device_selector_t* device_selector;
+} rac0_vm_t;
+
 rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory);
-void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* devices);
+void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_selector_t* device_selector);
+
+void rac0_vm_cycle(rac0_vm_t* vm);
+rac0_value_t rac0_vm_halted(rac0_vm_t* vm);
 
 #endif

@@ -21,13 +21,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // cpu initialization
     rac0_cpu_t cpu = (rac0_cpu_t) {
         .stack = {
             .top = 0 
         },
 
         .pc = 0,
-        .device = 0,
 
         .idt = 0,
         .idts = 0,
@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
         .status = 0
     };  
 
+    // memory initialization
     rac0_memory_t memory = (rac0_memory_t) {
         .memory = (rac0_byte_t*) calloc(sizeof(rac0_byte_t) * RAC0_MEGABYTE_SIZE, 1),
         .ptba = 0x0,
@@ -54,12 +55,13 @@ int main(int argc, char *argv[]) {
 
     memcpy(memory.memory, byte_code, byte_code_size);
 
+    // sdl peripheral initialization
     sdl_peripheral_devices_data_t sdl_peripheral;
     sdl_peripheral_initialize(&sdl_peripheral, 160, 144);
 
     pthread_t sdl_peripheral_thread;
     pthread_create(&sdl_peripheral_thread, NULL, sdl_peripheral_run, (void*) &sdl_peripheral);
-
+    
     rac0_device_t devices[] = {
         (rac0_device_t) { // Debug console
             .device_data = NULL, 
@@ -78,12 +80,22 @@ int main(int argc, char *argv[]) {
         }
     };
 
-    PLUM_LOG(PLUM_INFO, "CPU started");
+    // device selector initialization
+    rac0_device_selector_t device_selector = (rac0_device_selector_t) {
+        .devices = devices,
+        .device = 0,
+        .devc = 3
+    };
 
-    while(!rac0_status_bit_is_set(&cpu, RAC0_STATUS_HALTED_BIT_MASK))
-        rac0_cpu_inst_cycle(&cpu, &memory, devices);
+    // virtual machine initialization
+    rac0_vm_t vm = (rac0_vm_t) {
+        .cpu = &cpu,
+        .memory = &memory,
+        .device_selector = &device_selector
+    };
 
-    PLUM_LOG(PLUM_INFO, "CPU halted");
+    while(!rac0_vm_halted(&vm))
+        rac0_vm_cycle(&vm);  
 
     pthread_join(sdl_peripheral_thread, NULL);
     sdl_peripheral_free(&sdl_peripheral);
