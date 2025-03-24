@@ -83,6 +83,6 @@ rac0a_parse_result_t rac0a_parse_statement_list(rac0a_parser_t* parser, vector_t
 
 rac0a_parse_result_t rac0a_parse_module_definition(rac0a_parser_t* parser);
 
-rac0a_hl_statement_list_t rac0a_parse_program(const string_t input);
+rac0a_parse_result_t rac0a_parse_program(rac0a_parser_t* parser);
 
 #endif

@@ -31,6 +31,7 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_SETPTST_OPCODE     ((rac0_opcode_t) 6)
 #define RAC0_SETPTPST_OPCODE    ((rac0_opcode_t) 6)
 #define RAC0_SETTT_OPCODE       ((rac0_opcode_t) 7)
+#define RAC0_SETIRETT_OPCODE    ((rac0_opcode_t) 50) // todo
 #define RAC0_SETSTT_OPCODE      ((rac0_opcode_t) 8)
 
 // stack
@@ -39,6 +40,7 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_PUSHSS_OPCODE      ((rac0_opcode_t) 12)
 #define RAC0_PUSHDC_OPCODE      ((rac0_opcode_t) 13)
 #define RAC0_PUSHMS_OPCODE      ((rac0_opcode_t) 14)
+#define RAC0_PUSHIRET_OPCODE    ((rac0_opcode_t) 51) // todo
 #define RAC0_DUPT_OPCODE        ((rac0_opcode_t) 15)
 #define RAC0_DUPN_OPCODE        ((rac0_opcode_t) 16)
 #define RAC0_DROP_OPCODE        ((rac0_opcode_t) 17)

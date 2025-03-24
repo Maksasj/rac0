@@ -42,7 +42,7 @@ typedef struct {
     rac0_value_t iret; // interupt return pointer
 
     rac0_value_t status;
-    rac0_value_t timer; 
+    rac0_value_t timer;
 } rac0_cpu_t;
 
 void rac0_set_status_bit(rac0_cpu_t* cpu, rac0_value_t mask, rac0_value_t bool_value);

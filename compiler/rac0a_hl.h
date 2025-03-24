@@ -91,7 +91,8 @@ typedef struct {
 
 typedef struct {
     rac0a_hl_statement_type_t type;
-
+    rac0_value_t pointer;
+    
     union {
         rac0a_hl_constval_statement_t constval;
         rac0a_hl_constblock_statement_t constblock;

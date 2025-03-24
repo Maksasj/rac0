@@ -45,7 +45,7 @@ char* rac0_utils_read_file_string(char* file_name) {
     FILE *stream = fopen(file_name, "r");
 
     if(stream == NULL) {
-        PLUM_LOG(PLUM_ERROR, "Failed to open file '%s'", file_name);
+        // PLUM_LOG(PLUM_ERROR, "Failed to open file '%s'", file_name);
         return NULL;
     }
 
@@ -56,14 +56,14 @@ char* rac0_utils_read_file_string(char* file_name) {
         long buf_size = ftell(stream);
 
         if (buf_size == -1) { 
-            PLUM_LOG(PLUM_ERROR, "Failed ftell for '%s'", file_name);
+            // PLUM_LOG(PLUM_ERROR, "Failed ftell for '%s'", file_name);
             return NULL;
         }
 
         source = (char*) malloc(sizeof(char) * (buf_size + 1));
 
         if (fseek(stream, 0L, SEEK_SET) != 0)  { 
-            PLUM_LOG(PLUM_ERROR, "Failed fseek for '%s'", file_name);
+            // PLUM_LOG(PLUM_ERROR, "Failed fseek for '%s'", file_name);
             return NULL;
         }
 
@@ -71,7 +71,7 @@ char* rac0_utils_read_file_string(char* file_name) {
 
         if (ferror( stream ) != 0 ) {
             fputs("Error reading file", stderr);
-            PLUM_LOG(PLUM_ERROR, "Error reading file '%s'", file_name);
+            // PLUM_LOG(PLUM_ERROR, "Error reading file '%s'", file_name);
             return NULL;
         }
 
@@ -106,6 +106,21 @@ rac0_u64_t rac0a_get_line_number_from_index(const char* input, unsigned long lon
     }
 
     return line;
+}
+
+rac0_u64_t rac0a_get_line_length(const char* input) {
+    unsigned long long length = strlen(input);
+    rac0_u64_t pointer = 0;
+
+    for(int i = 0; i < length; ++i) {
+        if(input[i] == '\n')
+            break;
+
+        ++pointer;
+    }
+
+
+    return pointer;
 }
 
 rac0a_boolean_t rac0a_in_range_include(char value, char min, char max) {

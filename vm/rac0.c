@@ -51,6 +51,21 @@ rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory) {
 void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* devices) {
     rac0_inst_t inst = rac0_fetch_inst(cpu->pc, memory);
  
+
+    // timer
+    if(rac0_status_bit_is_set(cpu, RAC0_STATUS_TIMER_MODE_BIT_MASK)) {
+        --cpu->timer;
+    
+        if(cpu->timer <= 0) {
+            rac0_value_t* idt = (rac0_value_t*) (memory->memory + cpu->idt);
+            rac0_value_t entry = idt[0];
+            // todo validation
+            cpu->iret = cpu->pc + 1 * sizeof(rac0_inst_t);
+            cpu->pc = entry;
+            goto cont;
+        }
+    }
+
     // nikita ---------------------------------------------------------------------------
     if(inst.opcode == RAC0_HALT_OPCODE) { // cpu
         rac0_set_status_bit(cpu, RAC0_STATUS_HALTED_BIT_MASK, 1);
@@ -78,9 +93,13 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         memory->ptps = value;
         goto inc;
-    } else if(inst.opcode == RAC0_SETTT_OPCODE) { // TIMER register
+    } else if(inst.opcode == RAC0_SETTT_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         cpu->timer = value;
+        goto inc;
+    } else if(inst.opcode == RAC0_SETIRETT_OPCODE) {
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        cpu->iret = value;
         goto inc;
     } else if(inst.opcode == RAC0_SETSTT_OPCODE) {
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
@@ -99,7 +118,10 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_stack_push(&cpu->stack, cpu->device);
         goto inc;
     } else if(inst.opcode == RAC0_PUSHMS_OPCODE) {
-        rac0_stack_push(&cpu->stack, RAC0_MEGABYTE_SIZE);
+        rac0_stack_push(&cpu->stack, RAC0_MEGABYTE_SIZE); // todo lets memory struct have something like a memory size variable
+        goto inc;
+    } else if(inst.opcode == RAC0_PUSHIRET_OPCODE) {
+        rac0_stack_push(&cpu->stack, cpu->iret);
         goto inc;
     } else if(inst.opcode == RAC0_DUPT_OPCODE) {
         rac0_stack_push(&cpu->stack, rac0_stack_get_top(&cpu->stack));
@@ -273,11 +295,19 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
         rac0_device_t device = devices[cpu->device];
         (*device.push)(device.device_data, top, next);
     } else if(inst.opcode == RAC0_INT_OPCODE) { // interrupt
-        PLUM_LOG(PLUM_ERROR,"Opcode INT is not implemented");
+        rac0_value_t* idt = (rac0_value_t*) (memory->memory + cpu->idt);
+        rac0_value_t entry = idt[inst.value];
+        // todo validation
+        cpu->iret = cpu->pc + 1 * sizeof(rac0_inst_t);
+        cpu->pc = entry;
+        goto cont;
     } else if(inst.opcode == RAC0_IRET_OPCODE) {
-        PLUM_LOG(PLUM_ERROR,"Opcode IRET is not implemented");
+        cpu->pc = cpu->iret;
+        goto cont;
+        // todo validation and mode
     } else {
         PLUM_LOG(PLUM_ERROR, "Opcode is not implemented %.4x", inst.opcode);
+        rac0_set_status_bit(cpu, RAC0_STATUS_HALTED_BIT_MASK, 1);
         return;
     }
 
@@ -286,6 +316,6 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_t* 
 
     cont:
 
-    // PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, cpu->device);
-    // PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
+    PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, cpu->device);
+    PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
 }

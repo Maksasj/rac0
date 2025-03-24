@@ -28,6 +28,9 @@ const char* plum_stringify_log_level(PlumLogLevel logLevel);
 void plum_log(PlumLogLevel logLevel, const char *format, ...);
 
 #define PLUM_LOG(logLevel, ...) plum_log(logLevel, __VA_ARGS__)
+#define PLUM_UNREACHABLE()                                      \
+    PLUM_LOG(PLUM_ERROR, "Unreachable in %s", __FILE__);        \
+    exit(1);                                                    \
 
 #ifdef PLUM_IMPLEMENTATION
 
