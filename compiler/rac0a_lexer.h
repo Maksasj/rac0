@@ -89,6 +89,8 @@ rac0a_lex_result_t rac0a_lex_comma(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
 rac0a_lex_result_t rac0a_lex_string(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
+rac0a_lex_result_t rac0a_lex_character(rac0a_token_t* token, rac0a_lexer_t* lexer);
+
 rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer);
 
 #endif

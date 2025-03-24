@@ -29,10 +29,10 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_SETIDTST_OPCODE    ((rac0_opcode_t) 4)
 #define RAC0_SETPTBAT_OPCODE    ((rac0_opcode_t) 5)
 #define RAC0_SETPTST_OPCODE     ((rac0_opcode_t) 6)
-#define RAC0_SETPTPST_OPCODE    ((rac0_opcode_t) 6)
-#define RAC0_SETTT_OPCODE       ((rac0_opcode_t) 7)
+#define RAC0_SETPTPST_OPCODE    ((rac0_opcode_t) 7)
+#define RAC0_SETTT_OPCODE       ((rac0_opcode_t) 8)
 #define RAC0_SETIRETT_OPCODE    ((rac0_opcode_t) 50) // todo
-#define RAC0_SETSTT_OPCODE      ((rac0_opcode_t) 8)
+#define RAC0_SETSTT_OPCODE      ((rac0_opcode_t) 9)
 
 // stack
 #define RAC0_PUSHA_OPCODE       ((rac0_opcode_t) 10)
@@ -161,6 +161,9 @@ static char* RAC0_OPCODE_STRING[] = {
     // interrupt
     "INT",
     "IRET",
+
+    "SETIRETT",
+    "PUSHIRET"
 };
 
 #endif

@@ -155,6 +155,9 @@ rac0a_lex_result_t rac0a_lex_number(rac0a_token_t* token, rac0a_lexer_t* lexer) 
     if(rac0a_lex_binary_number(token, lexer).code == RAC0A_OK)
         return (rac0a_lex_result_t) { RAC0A_OK };
 
+    if(rac0a_lex_character(token, lexer).code == RAC0A_OK)
+        return (rac0a_lex_result_t) { RAC0A_OK };
+
     return (rac0a_lex_result_t) { RAC0A_ERROR };
 }
 
@@ -246,7 +249,25 @@ rac0a_lex_result_t rac0a_lex_comma(rac0a_token_t* token, rac0a_lexer_t* lexer) {
         return (rac0a_lex_result_t) { RAC0A_ERROR };
 
     token->type = RAC0A_TOKEN_COMMA;
-    token->lexeme = rac0a_string_copy(",");;
+    token->lexeme = rac0a_string_copy(",");
+
+    lexer->pointer++;
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
+rac0a_lex_result_t rac0a_lex_character(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if (lexer->input[lexer->pointer] != '\'') 
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    int start = lexer->pointer;
+
+    lexer->pointer += 2;
+    if (lexer->input[lexer->pointer] != '\'') 
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    token->lexeme = rac0a_string_copy_len(&lexer->input[start], 3);
+    token->type = RAC0A_TOKEN_NUMBER;
 
     lexer->pointer++;
 

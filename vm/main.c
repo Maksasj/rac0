@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
     // memory initialization
     rac0_memory_t memory = (rac0_memory_t) {
         .memory = (rac0_byte_t*) calloc(sizeof(rac0_byte_t) * RAC0_MEGABYTE_SIZE, 1),
+        .memory_size = RAC0_MEGABYTE_SIZE,
         .ptba = 0x0,
         .pts = 0x0,
         .ptps = 0x0
@@ -93,9 +94,15 @@ int main(int argc, char *argv[]) {
         .memory = &memory,
         .device_selector = &device_selector
     };
+    
+    PLUM_LOG(PLUM_INFO, "Virtual machine started");
 
     while(!rac0_vm_halted(&vm))
         rac0_vm_cycle(&vm);  
+
+    rac0_dump_memory_fmt(vm.memory, "memory.txt");
+
+    PLUM_LOG(PLUM_INFO, "Virtual machine finished");
 
     pthread_join(sdl_peripheral_thread, NULL);
     sdl_peripheral_free(&sdl_peripheral);

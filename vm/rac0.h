@@ -2,6 +2,7 @@
 #define RAC0_H
 
 #include <stdio.h>
+#include <ctype.h>
 
 #include "plum.h"
 #include "rac0_base.h"
@@ -49,11 +50,15 @@ rac0_value_t rac0_status_bit_is_set(rac0_cpu_t* cpu, rac0_value_t mask);
 
 typedef struct {    
     rac0_byte_t* memory;
+    rac0_value_t memory_size;
 
     rac0_value_t ptba;
     rac0_value_t pts;
     rac0_value_t ptps;
 } rac0_memory_t;
+
+rac0_value_t rac0_get_physical_address(rac0_memory_t* memory, rac0_value_t virtual_address, rac0_value_t paging);
+void rac0_dump_memory_fmt(rac0_memory_t* memory, const char* file_name);
 
 typedef struct {
     rac0_device_t* devices;

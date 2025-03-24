@@ -124,11 +124,14 @@ rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* nu
 
     rac0a_token_t token;
     token.lexeme = NULL;
+
     if(rac0a_parse_token(parser, RAC0A_TOKEN_NUMBER, &token).code == RAC0A_OK) {
         if(strncmp(token.lexeme, "0b", 2) == 0) {
             *number = strtoull(token.lexeme + 2, NULL, 2);
         } else if(strncmp(token.lexeme, "0x", 2) == 0) {
             *number = strtoull(token.lexeme, NULL, 0);
+        } else if(strncmp(token.lexeme, "'", 1) == 0) {
+            *number = token.lexeme[1];
         } else {
             rac0a_free_token(token);
             return rac0a_parse_result_error("Failed to parse number not suported number format", parser->lexer.pointer);

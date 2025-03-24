@@ -6,8 +6,8 @@
 void rac0a_print_help(char* filename) {
     printf("Usage: %s [options] <input file> <output file>\n", filename);
     printf("Options:\n");
-    printf("    --help          Display this information.");
-    printf("    -dump           Dump parsing and assembly stage results");
+    printf("    --help          Display this information.\n");
+    printf("    -dump           Dump parsing and assembly stage results\n");
 }
 
 int main(int argc, char *argv[]) {

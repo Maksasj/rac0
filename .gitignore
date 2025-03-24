@@ -4,3 +4,4 @@ rac0a
 *.o
 *.bin
 *.rac0a.dump.txt
+memory.txt

@@ -48,8 +48,64 @@ rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory) {
     return *((rac0_inst_t*) &memory->memory[pc]);
 }
 
+rac0_value_t rac0_get_physical_address(rac0_memory_t* memory, rac0_value_t virtual_address, rac0_value_t paging) {
+    rac0_value_t ptba = memory->ptba;
+    rac0_value_t pts = memory->pts;
+    rac0_value_t ptps = memory->ptps;
+
+    if(paging) {
+        rac0_value_t virtual_page_number = virtual_address / ptps;  
+        rac0_value_t offset = virtual_address % ptps;
+        rac0_value_t physical_frame = ((rac0_value_t*) (memory->memory + ptba))[virtual_page_number];
+        rac0_value_t physical_final_address = physical_frame * ptps + offset;
+        return physical_final_address;  
+    }
+
+    return virtual_address;
+}
+
+void rac0_dump_memory_fmt(rac0_memory_t* memory, const char* file_name) {
+    FILE *file = fopen(file_name, "wb");
+
+    rac0_value_t lines = memory->memory_size / 8;
+
+    for(rac0_value_t l = 0; l < lines; ++l) {
+        fprintf(file, "[ 0x%.16llx ] [", l * 8);
+
+        for(rac0_value_t i = 0; i < 8; ++i) {
+            rac0_byte_t byte = memory->memory[l * 8 + i];
+            fprintf(file, "0x%.2x ", byte);
+        }
+
+        fprintf(file, " ] [ ");
+
+        for(rac0_value_t i = 0; i < 8; ++i) {
+            rac0_byte_t byte = memory->memory[l * 8 + i];
+      
+            if(isprint(byte)) {
+                fprintf(file, "%c", byte);
+            } else {
+                fprintf(file, " ");
+            }
+        }
+
+        fprintf(file, " ] [ ");
+
+        for(rac0_value_t i = 0; i < 8; ++i) {
+            rac0_byte_t byte = memory->memory[l * 8 + i];
+            fprintf(file, "'%.3d' ", byte);
+        }
+
+        fprintf(file, "] \n");
+    }
+
+    fclose(file);
+}
+
 void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_selector_t* device_selector) {
     rac0_inst_t inst = rac0_fetch_inst(cpu->pc, memory);
+
+    rac0_value_t paging_flag = rac0_status_bit_is_set(cpu, RAC0_STATUS_PAGE_MODE_BIT_MASK); 
 
     if(rac0_status_bit_is_set(cpu, RAC0_STATUS_TIMER_MODE_BIT_MASK)) {
         --cpu->timer;
@@ -139,23 +195,27 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         rac0_stack_push(&cpu->stack, next);
         goto inc;
     } else if(inst.opcode == RAC0_STORE_OPCODE) { // memory
-        rac0_value_t address = rac0_stack_get_top(&cpu->stack);
         rac0_value_t value = rac0_stack_get_next(&cpu->stack);
-        *((rac0_value_t*) &memory->memory[address]) = value;
+        rac0_value_t virtual_address = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, paging_flag);
+        *((rac0_value_t*) (memory->memory + physical_address)) = value;
         goto inc;
     } else if(inst.opcode == RAC0_STOREA_OPCODE) {
-        rac0_value_t address = inst.value;
-        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
-        *((rac0_value_t*) &memory->memory[address]) = top;
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t virtual_address = inst.value;
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, paging_flag);
+        *((rac0_value_t*) (memory->memory + physical_address)) = value;
         goto inc;
     } else if(inst.opcode == RAC0_LOAD_OPCODE) {
-        rac0_value_t address = rac0_stack_get_top(&cpu->stack);
-        rac0_value_t value = *((rac0_value_t*) &memory->memory[address]);
+        rac0_value_t virtual_address = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, paging_flag);
+        rac0_value_t value = *((rac0_value_t*) (memory->memory + physical_address));
         rac0_stack_push(&cpu->stack, value);
         goto inc;
     } else if(inst.opcode == RAC0_LOADA_OPCODE) {
-        rac0_value_t address = inst.value;
-        rac0_value_t value = *((rac0_value_t*) &memory->memory[address]);
+        rac0_value_t virtual_address = inst.value;
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, paging_flag);
+        rac0_value_t value = *((rac0_value_t*) (memory->memory + physical_address));
         rac0_stack_push(&cpu->stack, value);
         goto inc;
     } else if(inst.opcode == RAC0_ADD_OPCODE) { // arithmetic
@@ -316,8 +376,8 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
     cont:
 
-    // PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, device_selector->device);
-    // PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
+    PLUM_LOG(PLUM_TRACE, "[ stack size: %llu ] [ pc: 0x%.16llx ] [ device: %llu ]",cpu->stack.top, cpu->pc, device_selector->device);
+    PLUM_LOG(PLUM_TRACE, "[ 0x%.4x ] 0x%.16llx %s", inst.opcode, inst.value, RAC0_OPCODE_STRING[inst.opcode]);
 }
 
 void rac0_vm_cycle(rac0_vm_t* vm) {
