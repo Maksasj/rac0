@@ -126,3 +126,115 @@ rac0_u64_t rac0a_get_line_length(const char* input) {
 rac0a_boolean_t rac0a_in_range_include(char value, char min, char max) {
     return (value >= min) && (value <= max); 
 }
+
+rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode) {
+    return opcode >= 0 && opcode <= 51;
+}
+
+rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
+    if(opcode == RAC0_HALT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_WAIT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETIDTT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETIDTST_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETPTBAT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETPTST_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETPTPST_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETTT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETIRETT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETSTT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_PUSHA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_PUSHPC_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_PUSHSS_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_PUSHDC_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_PUSHMS_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_PUSHIRET_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_DUPT_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_DUPN_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_DROP_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_SWAP_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_STORE_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_STOREA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_LOAD_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_LOADA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_ADD_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_SUB_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_MUL_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_DIV_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_MOD_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_CMP_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_NEG_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_NOT_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_AND_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_OR_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_NAND_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_NOR_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_XOR_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_JMPA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_JMPT_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_JZA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_JNZA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_JNEGA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_JPOSA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_SETDA_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_SETDT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_FETCHDA_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_FETCHDT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_PUTDA_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_PUTDT_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_INT_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_IRET_OPCODE) {
+        return 1;
+    } else {
+        return 0;
+    }
+}

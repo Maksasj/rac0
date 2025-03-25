@@ -29,6 +29,9 @@ void rac0_stack_drop(rac0_stack_t* stack);
 #define RAC0_STATUS_TIMER_MODE_BIT_MASK ((rac0_value_t) (0b0000000000000000000000000000000000000000000000000000000000000100))
 #define RAC0_STATUS_PAGE_MODE_BIT_MASK  ((rac0_value_t) (0b0000000000000000000000000000000000000000000000000000000000001000))
 
+#define RAC0_USER_MODE                  ((rac0_value_t) (0b1))
+#define RAC0_KERNEL_MODE                ((rac0_value_t) (0b0))
+
 typedef struct {
     // stack
     rac0_stack_t stack;
@@ -58,6 +61,7 @@ typedef struct {
     rac0_value_t ptps;
 } rac0_memory_t;
 
+rac0_value_t rac0_valid_memory_access(rac0_memory_t* memory, rac0_value_t virtual_address, rac0_value_t paging);
 rac0_value_t rac0_get_physical_address(rac0_memory_t* memory, rac0_value_t virtual_address, rac0_value_t paging);
 void rac0_dump_memory_fmt(rac0_memory_t* memory, const char* file_name);
 
@@ -73,6 +77,16 @@ typedef struct {
     rac0_device_selector_t* device_selector;
 } rac0_vm_t;
 
+#define RAC0_INTERRUPT_TIMER                        ((rac0_value_t) (0x0))
+#define RAC0_INTERRUPT_INVINST                      ((rac0_value_t) (0x1))
+#define RAC0_INTERRUPT_PRIV                         ((rac0_value_t) (0x2))
+#define RAC0_INTERRUPT_INVINT                       ((rac0_value_t) (0x3))
+#define RAC0_INTERRUPT_INVPACC                      ((rac0_value_t) (0x4))
+#define RAC0_INTERRUPT_INVDEV                       ((rac0_value_t) (0x5))
+#define RAC0_INTERRUPT_DEVAMCH                      ((rac0_value_t) (0x6))
+
+void rac0_cpu_throw_interrupt(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_value_t code);
+void rac0_cpu_throw_interrupt_step(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_value_t code);
 rac0_inst_t rac0_fetch_inst(rac0_u64_t pc, rac0_memory_t* memory);
 void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_selector_t* device_selector);
 

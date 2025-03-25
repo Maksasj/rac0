@@ -83,8 +83,8 @@ code:
     setidtst
     drop
     
-    int 0x0
-    int 0x1
+    int 0x7
+    int 0x8
 
     pusha &interrupt_table_1
     setidtt
@@ -94,7 +94,7 @@ code:
     setidtst
     drop
     
-    int 0x0
-    int 0x1
+    int 0x7
+    int 0x8
 
     halt
