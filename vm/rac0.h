@@ -35,6 +35,7 @@ typedef struct {
 
     // registers
     rac0_value_t pc;
+    rac0_value_t cycle;
 
     // idt
     rac0_value_t idt;

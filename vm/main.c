@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
         },
 
         .pc = 0,
+        .cycle = 0,
 
         .idt = 0,
         .idts = 0,
