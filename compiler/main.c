@@ -1,10 +1,8 @@
 #include "rac0_utils.h"
 #include "rac0a_assembler.h"
 
-
-
 void rac0a_print_help(char* filename) {
-    printf("Usage: %s [options] <input file> <output file>\n", filename);
+    printf("Usage: %s <input file> <output file> [options]\n", filename);
     printf("Options:\n");
     printf("    --help          Display this information.\n");
     printf("    -dump           Dump parsing and assembly stage results\n");

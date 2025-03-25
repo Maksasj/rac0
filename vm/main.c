@@ -2,24 +2,59 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+#include "haul/haul.h"
 #include "rac0.h"
-
 #include "rac0_utils.h"
+
 #include "sdl_peripheral.h"
+#include "debug_peripheral.h"
 
-void debug_console_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
-    PLUM_LOG(PLUM_EXPERIMENTAL, "%d", value);
+void rac0_print_help(char* filename) {
+    printf("Usage: %s <input file> [options]\n", filename);
+    printf("Options:\n");
+    printf("    --help          Display this information.\n");
+    printf("    -dumpm          Dump memory after virtual machine haltes\n");
+    printf("    -dsdl           Enable SDL peripheral device\n");
+    printf("    -ddeb           Enable debug peripheral device\n");
 }
 
-rac0_value_t debug_console_device_pool(void* device_data, rac0_u64_t adress) {
-    return 0;
-}
+typedef struct {
+    char* input_filename;
+    rac0_value_t dump_memory;
+    rac0_value_t sdl_device;
+    rac0_value_t debug_console_device;
+} rac0_vm_configuration_t;
 
 int main(int argc, char *argv[]) {
     if(argc < 2) {
-        PLUM_LOG(PLUM_ERROR, "File usage: %s <input file name>", argv[0]);
+        rac0_print_help(argv[0]);
         return 1;
     }
+
+    rac0_vm_configuration_t configuration;
+    configuration.input_filename = argv[1];
+    configuration.dump_memory = 0;
+    configuration.sdl_device = 0;
+    configuration.debug_console_device = 0;
+
+    string_set_t arguments;
+    arguments.items.items = (void**) argv;
+    arguments.items.stored = argc;
+    arguments.items.capacity = argc;
+
+    if(string_set_has(&arguments, "--help")) {
+        rac0_print_help(argv[1]);
+        return 0;
+    }
+
+    if(string_set_has(&arguments, "-dumpm"))
+        configuration.dump_memory = 1;
+
+    if(string_set_has(&arguments, "-dsdl"))
+        configuration.sdl_device = 1;
+
+    if(string_set_has(&arguments, "-ddeb"))
+        configuration.debug_console_device = 1;
 
     // cpu initialization
     rac0_cpu_t cpu = (rac0_cpu_t) {
@@ -45,8 +80,8 @@ int main(int argc, char *argv[]) {
         .ptps = 0x0
     };
 
-    rac0_byte_t* byte_code = (rac0_byte_t*) rac0_utils_read_file_string(argv[1]);
-    int byte_code_size = rac0_utils_read_file_size(argv[1]);
+    rac0_byte_t* byte_code = (rac0_byte_t*) rac0_utils_read_file_string(configuration.input_filename);
+    int byte_code_size = rac0_utils_read_file_size(configuration.input_filename);
         
     if(byte_code_size == -1)
         return 1;
@@ -58,34 +93,43 @@ int main(int argc, char *argv[]) {
 
     // sdl peripheral initialization
     sdl_peripheral_devices_data_t sdl_peripheral;
-    sdl_peripheral_initialize(&sdl_peripheral, 160, 144);
-
     pthread_t sdl_peripheral_thread;
-    pthread_create(&sdl_peripheral_thread, NULL, sdl_peripheral_run, (void*) &sdl_peripheral);
+
+    if(configuration.sdl_device) {
+        sdl_peripheral_initialize(&sdl_peripheral, 160, 144);
+        pthread_create(&sdl_peripheral_thread, NULL, sdl_peripheral_run, (void*) &sdl_peripheral);
+    }
     
-    rac0_device_t devices[] = {
-        (rac0_device_t) { // Debug console
-            .device_data = NULL, 
-            .push = debug_console_device_push, 
-            .pool = debug_console_device_pool 
-        },
-        (rac0_device_t) { // SDL screen
-            .device_data = &sdl_peripheral, 
-            .push = sdl_peripheral_screen_device_push, 
-            .pool = sdl_peripheral_screen_device_pool 
-        },
-        (rac0_device_t) { // SDL keyboard
-            .device_data = &sdl_peripheral, 
-            .push = sdl_peripheral_keyboard_device_push, 
-            .pool = sdl_peripheral_keyboard_device_pool 
-        }
-    };
+    vector_t devices;
+    create_vector(&devices, 1000);
+
+    if(configuration.debug_console_device) {
+        rac0_device_t* device = (rac0_device_t*) malloc(sizeof(rac0_device_t));
+        device->device_data = NULL;
+        device->push = debug_console_device_push;
+        device->pool = debug_console_device_pool;
+        vector_push(&devices, device);
+    }
+
+    if(configuration.sdl_device) {
+        rac0_device_t* screen = (rac0_device_t*) malloc(sizeof(rac0_device_t));
+        screen->device_data = &sdl_peripheral,
+        screen->push = sdl_peripheral_screen_device_push;
+        screen->pool = sdl_peripheral_screen_device_pool;
+        vector_push(&devices, screen);
+
+        rac0_device_t* keyboard = (rac0_device_t*) malloc(sizeof(rac0_device_t));
+        keyboard->device_data = &sdl_peripheral,
+        keyboard->push = sdl_peripheral_keyboard_device_push;
+        keyboard->pool = sdl_peripheral_keyboard_device_pool;
+        vector_push(&devices, keyboard);
+    }
 
     // device selector initialization
     rac0_device_selector_t device_selector = (rac0_device_selector_t) {
-        .devices = devices,
+        .devices = (rac0_device_t**) devices.items,
         .device = 0,
-        .devc = 3
+        .devc = vector_size(&devices)
     };
 
     // virtual machine initialization
@@ -100,12 +144,15 @@ int main(int argc, char *argv[]) {
     while(!rac0_vm_halted(&vm))
         rac0_vm_cycle(&vm);  
 
-    rac0_dump_memory_fmt(vm.memory, "memory.txt");
-
     PLUM_LOG(PLUM_INFO, "Virtual machine finished");
 
-    pthread_join(sdl_peripheral_thread, NULL);
-    sdl_peripheral_free(&sdl_peripheral);
+    if(configuration.sdl_device) {
+        pthread_join(sdl_peripheral_thread, NULL);
+        sdl_peripheral_free(&sdl_peripheral);
+    }
+
+    if(configuration.dump_memory)
+        rac0_dump_memory_fmt(vm.memory, "memory.txt");
 
     return 0;
 }

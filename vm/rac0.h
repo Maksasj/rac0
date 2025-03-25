@@ -61,7 +61,7 @@ rac0_value_t rac0_get_physical_address(rac0_memory_t* memory, rac0_value_t virtu
 void rac0_dump_memory_fmt(rac0_memory_t* memory, const char* file_name);
 
 typedef struct {
-    rac0_device_t* devices;
+    rac0_device_t** devices;
     rac0_value_t device; 
     rac0_value_t devc; 
 } rac0_device_selector_t;
