@@ -451,8 +451,16 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
         goto cont;
     } else if(opcode == RAC0_IRET_OPCODE) {
+        rac0_value_t arg = inst.value;
         rac0_value_t iret = rac0_stack_get_top(&cpu->iret);
         rac0_stack_drop(&cpu->iret);
+
+        if(arg) {
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 1);
+        } else {
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+        }
+
         cpu->pc = iret;
         goto cont;
     } else {
