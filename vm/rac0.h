@@ -41,9 +41,9 @@ typedef struct {
     rac0_value_t cycle;
 
     // idt
-    rac0_value_t idt;
-    rac0_value_t idts; // pointer to interupt table
-    rac0_value_t iret; // interupt return pointer
+    rac0_value_t idt; // pointer to interupt table
+    rac0_value_t idts;
+    rac0_stack_t iret; // interupt return pointer
 
     rac0_value_t status;
     rac0_value_t timer;

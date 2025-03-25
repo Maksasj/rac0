@@ -47,14 +47,14 @@ rac0_value_t rac0_status_bit_is_set(rac0_cpu_t* cpu, rac0_value_t mask) {
 void rac0_cpu_throw_interrupt(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_value_t code) {
     rac0_value_t* idt = (rac0_value_t*) (memory->memory + cpu->idt);
     rac0_value_t entry = idt[code];
-    cpu->iret = cpu->pc;
+    rac0_stack_push(&cpu->iret, cpu->pc);
     cpu->pc = entry;
 }
 
 void rac0_cpu_throw_interrupt_step(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_value_t code) {
     rac0_value_t* idt = (rac0_value_t*) (memory->memory + cpu->idt);
     rac0_value_t entry = idt[code];
-    cpu->iret = cpu->pc + 1 * sizeof(rac0_inst_t);
+    rac0_stack_push(&cpu->iret, cpu->pc + 1 * sizeof(rac0_inst_t));
     cpu->pc = entry;
 }
 
@@ -192,8 +192,8 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         cpu->timer = top;
         goto inc;
     } else if(opcode == RAC0_SETIRETT_OPCODE) {
-        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
-        cpu->iret = top;
+        rac0_stack_drop(&cpu->iret);
+        rac0_stack_push(&cpu->iret, rac0_stack_get_top(&cpu->stack));
         goto inc;
     } else if(opcode == RAC0_SETSTT_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
@@ -215,7 +215,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         rac0_stack_push(&cpu->stack, memory->memory_size);
         goto inc;
     } else if(opcode == RAC0_PUSHIRET_OPCODE) {
-        rac0_stack_push(&cpu->stack, cpu->iret);
+        rac0_stack_push(&cpu->stack, rac0_stack_get_top(&cpu->iret));
         goto inc;
     } else if(opcode == RAC0_DUPT_OPCODE) {
         rac0_stack_push(&cpu->stack, rac0_stack_get_top(&cpu->stack));
@@ -451,7 +451,9 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
         goto cont;
     } else if(opcode == RAC0_IRET_OPCODE) {
-        cpu->pc = cpu->iret;
+        rac0_value_t iret = rac0_stack_get_top(&cpu->iret);
+        rac0_stack_drop(&cpu->iret);
+        cpu->pc = iret;
         goto cont;
     } else {
         PLUM_LOG(PLUM_ERROR, "[ 0x%.16llx ] Opcode is not implemented %.4x", cpu->pc, opcode);

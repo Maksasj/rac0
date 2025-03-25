@@ -67,7 +67,9 @@ int main(int argc, char *argv[]) {
 
         .idt = 0,
         .idts = 0,
-        .iret = 0,
+        .iret = {
+            .top = 0
+        },
     
         .status = 0
     };  
