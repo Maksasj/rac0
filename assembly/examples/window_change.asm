@@ -80,6 +80,7 @@ code:
         pusha $color_red
         jmpa &continue_loop
 
+
     continue_loop:
     pushpc
     jmpa &fill_screen
@@ -89,5 +90,4 @@ code:
     drop
 
     jmpa &code
-
     halt

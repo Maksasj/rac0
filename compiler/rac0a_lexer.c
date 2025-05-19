@@ -274,6 +274,30 @@ rac0a_lex_result_t rac0a_lex_character(rac0a_token_t* token, rac0a_lexer_t* lexe
     return (rac0a_lex_result_t) { RAC0A_OK };
 }
 
+rac0a_lex_result_t rac0a_lex_lsquarebracket(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(lexer->input[lexer->pointer] != '[')
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    token->type = RAC0A_TOKEN_L_SQUARE_BRACKET;
+    token->lexeme = rac0a_string_copy("[");
+
+    lexer->pointer++;
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
+rac0a_lex_result_t rac0a_lex_rsquarebracket(rac0a_token_t* token, rac0a_lexer_t* lexer) {
+    if(lexer->input[lexer->pointer] != ']')
+        return (rac0a_lex_result_t) { RAC0A_ERROR };
+
+    token->type = RAC0A_TOKEN_R_SQUARE_BRACKET;
+    token->lexeme = rac0a_string_copy("]");
+
+    lexer->pointer++;
+
+    return (rac0a_lex_result_t) { RAC0A_OK };
+}
+
 rac0a_lex_result_t rac0a_lex_string(rac0a_token_t* token, rac0a_lexer_t* lexer) {
     if (lexer->input[lexer->pointer] != '"') 
         return (rac0a_lex_result_t) { RAC0A_ERROR };
@@ -386,6 +410,12 @@ rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer) {
         return token;
 
     if(rac0a_lex_string(&token, lexer).code == RAC0A_OK)
+        return token;
+
+    if(rac0a_lex_lsquarebracket(&token, lexer).code == RAC0A_OK)
+        return token;
+
+    if(rac0a_lex_rsquarebracket(&token, lexer).code == RAC0A_OK)
         return token;
 
     if(rac0a_lex_ampersand(&token, lexer).code == RAC0A_OK)

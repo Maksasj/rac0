@@ -48,6 +48,8 @@ rac0a_parse_result_t rac0a_parse_label(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_number(rac0a_parser_t* parser, rac0_value_t* number);
 rac0a_parse_result_t rac0a_parse_l_bracket(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_r_bracket(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_l_squarebracket(rac0a_parser_t* parser);
+rac0a_parse_result_t rac0a_parse_r_squarebracket(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_percent(rac0a_parser_t* parser);
 rac0a_parse_result_t rac0a_parse_string(rac0a_parser_t* parser, string_t* string);
 rac0a_parse_result_t rac0a_parse_ampersand(rac0a_parser_t* parser);
@@ -73,6 +75,7 @@ rac0a_parse_result_t rac0a_parse_instruction_arg(rac0a_parser_t* parser, const s
 
 rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_instruction_statement_t* inst);
 
+rac0a_parse_result_t rac0a_parse_byte_definition_value(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value);
 rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value);
 
 rac0a_parse_result_t rac0a_parse_constblock_usage(rac0a_parser_t* parser);

@@ -152,6 +152,14 @@ rac0a_parse_result_t rac0a_parse_r_bracket(rac0a_parser_t* parser) {
     return rac0a_parse_token(parser, RAC0A_TOKEN_R_BRACKET, NULL);
 }
 
+rac0a_parse_result_t rac0a_parse_l_squarebracket(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_L_SQUARE_BRACKET, NULL);
+}
+
+rac0a_parse_result_t rac0a_parse_r_squarebracket(rac0a_parser_t* parser) {
+    return rac0a_parse_token(parser, RAC0A_TOKEN_R_SQUARE_BRACKET, NULL);
+}
+
 rac0a_parse_result_t rac0a_parse_percent(rac0a_parser_t* parser) {
     return rac0a_parse_token(parser, RAC0A_TOKEN_PERCENT, NULL);
 }
@@ -743,6 +751,51 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     return rac0a_parse_result_error("Failed to parse instruction, unknown instruction", parser->lexer.pointer);
 }
 
+rac0a_parse_result_t rac0a_parse_empty_array_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    if(rac0a_parse_l_squarebracket(parser).code == RAC0A_ERROR) {
+        parser->lexer = backup;
+        return rac0a_parse_result_error("Failed to parse empty byte array definition, expected '[' symbol", parser->lexer.pointer);
+    }
+
+    rac0_value_t number;
+    if(rac0a_parse_number(parser, &number).code == RAC0A_ERROR) {
+        parser->lexer = backup;
+        return rac0a_parse_result_error("Failed to parse empty byte array definition, expected number", parser->lexer.pointer);
+    }
+
+
+    if(rac0a_parse_r_squarebracket(parser).code == RAC0A_ERROR) {
+        parser->lexer = backup;
+        return rac0a_parse_result_error("Failed to parse empty byte array definition, expected ']' symbol",  parser->lexer.pointer);
+    }
+    
+    value->array = calloc(number, 1);
+    value->size = number;
+
+    return rac0a_parse_result_ok();
+}
+
+rac0a_parse_result_t rac0a_parse_byte_definition_value(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
+    string_t string;
+
+    if(rac0a_parse_string(parser, &string).code == RAC0A_OK) {
+        value->array = rac0a_string_copy(string);
+        value->size = strlen(string);
+        
+        free(string);
+
+        return rac0a_parse_result_ok();
+    }
+
+    if(rac0a_parse_empty_array_definition(parser, value).code == RAC0A_OK) {
+        return rac0a_parse_result_ok();
+    }
+
+    return rac0a_parse_result_error("Failed to parse byte definition", parser->lexer.pointer);
+}
+
 rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
     rac0a_lexer_t backup = parser->lexer;
 
@@ -762,19 +815,14 @@ rac0a_parse_result_t rac0a_parse_byte_definition(rac0a_parser_t* parser, rac0a_h
         return rac0a_parse_result_error("Failed to parse byte definition, expected 'db' keyword", parser->lexer.pointer);
     }
 
-    string_t string;
-    result = rac0a_parse_string(parser, &string);
+    result = rac0a_parse_byte_definition_value(parser, value);
     if(result.code == RAC0A_ERROR) {
         parser->lexer = backup;
         rac0a_free_token(label);
-        return rac0a_parse_result_failed("Failed to parse byte definition, expected string", parser->lexer.pointer);
+        return rac0a_parse_result_failed("Failed to parse byte definition", parser->lexer.pointer);
     }
 
     value->label = label.lexeme;
-    value->array = rac0a_string_copy(string);
-    value->size = strlen(string);
-    
-    free(string);
 
     return rac0a_parse_result_ok();
 }

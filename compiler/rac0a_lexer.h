@@ -32,6 +32,10 @@ typedef enum {
 
     RAC0A_TOKEN_COMMENT = 13,  
     RAC0A_TOKEN_COMMA = 14,   
+
+    RAC0A_TOKEN_L_SQUARE_BRACKET = 15,
+    RAC0A_TOKEN_R_SQUARE_BRACKET = 16,
+
     RAC0A_TOKEN_EOF = 0,
     RAC0A_TOKEN_ERROR = -1
 } rac0a_token_type_t;
@@ -90,6 +94,10 @@ rac0a_lex_result_t rac0a_lex_comma(rac0a_token_t* token, rac0a_lexer_t* lexer);
 rac0a_lex_result_t rac0a_lex_string(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
 rac0a_lex_result_t rac0a_lex_character(rac0a_token_t* token, rac0a_lexer_t* lexer);
+
+rac0a_lex_result_t rac0a_lex_lsquarebracket(rac0a_token_t* token, rac0a_lexer_t* lexer);
+
+rac0a_lex_result_t rac0a_lex_rsquarebracket(rac0a_token_t* token, rac0a_lexer_t* lexer);
 
 rac0a_token_t rac0a_next_token(rac0a_lexer_t* lexer);
 
