@@ -58,53 +58,53 @@ int_timer:
     setstt
     drop
 
-    pushiret // ((... iretc)
+    pushiret // ((... iretac)
 
-    loada &active_process // (... iretc active)
-    pusha &process_0 // (... iretc active process_0)
-    cmp // (... iretc active process_0 result)
-    swap // (... iretc active result process_0)
-    drop // (... iretc active result)
-    swap // (... iretc result active)
-    drop // (... iretc result)
+    loada &active_process // (... iretac active)
+    pusha &process_0 // (... iretac active process_0)
+    cmp // (... iretac active process_0 result)
+    swap // (... iretac active result process_0)
+    drop // (... iretac active result)
+    swap // (... iretac result active)
+    drop // (... iretac result)
 
     jnza &int_timer_continue_0 // active process is process 0
-    drop // (... iretc)
+    drop // (... iretac)
 
     // set active process
     pusha &process_1
     storea &active_process
     drop
 
-    loada &process_iret // (... iretc (new iretc))
-    swap // (... (new iretc) iretc)
+    loada &process_iret // (... iretac (new iretac))
+    swap // (... (new iretac) iretac)
     storea &process_iret
-    drop // (... (new iretc))
+    drop // (... (new iretac))
     jmpa &int_timer_return
 
     int_timer_continue_0:
-    drop // (... iretc)
+    drop // (... iretac)
 
-    loada &active_process // (... iretc active)
-    pusha &process_1 // (... iretc active process)
-    cmp // (... iretc active process result)
-    swap // (... iretc active result process)
-    drop // (... iretc active result)
-    swap // (... iretc result active)
-    drop // (... iretc result)
+    loada &active_process // (... iretac active)
+    pusha &process_1 // (... iretac active process)
+    cmp // (... iretac active process result)
+    swap // (... iretac active result process)
+    drop // (... iretac active result)
+    swap // (... iretac result active)
+    drop // (... iretac result)
 
     jnza &int_timer_continue_1 // active process is process 1
-    drop // (... iretc)
+    drop // (... iretac)
 
     // set active process
     pusha &process_0
     storea &active_process
     drop
 
-    loada &process_iret // (... iretc (new iretc))
-    swap // (... (new iretc) iretc)
+    loada &process_iret // (... iretac (new iretac))
+    swap // (... (new iretac) iretac)
     storea &process_iret
-    drop // (... (new iretc))
+    drop // (... (new iretac))
     jmpa &int_timer_return
 
     jmpa &int_timer_return
@@ -116,4 +116,4 @@ int_timer:
     int_timer_return:
     setirett
     drop
-    iretc 0x0
+    iretac 0x0

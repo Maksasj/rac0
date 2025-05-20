@@ -75,7 +75,7 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_PUTDA_OPCODE       ((rac0_opcode_t) 46)
 #define RAC0_PUTDT_OPCODE       ((rac0_opcode_t) 47)
 #define RAC0_INT_OPCODE         ((rac0_opcode_t) 48) // interrupt
-#define RAC0_IRETC_OPCODE        ((rac0_opcode_t) 49)
+#define RAC0_IRETAC_OPCODE        ((rac0_opcode_t) 49)
 
 rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode);
 

@@ -486,7 +486,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
 
         goto cont;
-    } else if(opcode == RAC0_IRETC_OPCODE) {
+    } else if(opcode == RAC0_IRETAC_OPCODE) {
         rac0_value_t arg = inst.value;
         rac0_value_t iret = rac0_stack_get_top(&cpu->iret);
         rac0_stack_drop(&cpu->iret);
@@ -512,7 +512,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
     PLUM_LOG(PLUM_TRACE, "%llu. STACK [ stack size: %llu ] [ top: 0x%.16llx ] [next: 0x%.16llx ]", cpu->cycle, cpu->stack.top, rac0_stack_get_top(&cpu->stack), rac0_stack_get_next(&cpu->stack));
     PLUM_LOG(PLUM_TRACE, "%llu. INST [ 0x%.4x ] 0x%.16llx %s", cpu->cycle, opcode, inst.value, RAC0_OPCODE_STRING[opcode]);
-    PLUM_LOG(PLUM_TRACE, "%llu. CPU [ pc: 0x%.16llx ] [ idt: %llu ] [ idts: %llu ] [ iretc: %.16llx ] [ status: %llu ] [ timer: %llu ]", cpu->cycle, cpu->pc, cpu->idt, cpu->idts, cpu->iret, cpu->status, cpu->timer);
+    PLUM_LOG(PLUM_TRACE, "%llu. CPU [ pc: 0x%.16llx ] [ idt: %llu ] [ idts: %llu ] [ iretac: %.16llx ] [ status: %llu ] [ timer: %llu ]", cpu->cycle, cpu->pc, cpu->idt, cpu->idts, cpu->iret, cpu->status, cpu->timer);
     PLUM_LOG(PLUM_TRACE, "%llu. MEMORY [ ptba: 0x%.16llx ] [ pts: %llu ] [ ptps: %llu ]", cpu->cycle, memory->ptba, memory->pts, memory->ptps);
     PLUM_LOG(PLUM_TRACE, "%llu. DEVICE [ device: %llu ] [ devc: %llu ]", cpu->cycle, device_selector->device, device_selector->devc);
 

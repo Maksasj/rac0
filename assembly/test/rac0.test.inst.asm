@@ -61,4 +61,4 @@ putdt
 
 // interrupt
 int 0x69
-iretc 0x1
+iretac 0x1

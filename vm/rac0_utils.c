@@ -232,7 +232,7 @@ rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
         return 1;
     } else if(opcode == RAC0_INT_OPCODE) {
         return 0;
-    } else if(opcode == RAC0_IRETC_OPCODE) {
+    } else if(opcode == RAC0_IRETAC_OPCODE) {
         return 1;
     } else {
         return 0;

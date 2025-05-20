@@ -4,7 +4,7 @@ int_timer:
     pusha 0x0
     putda 0x0
     drop
-    iretc 0x0
+    iretac 0x0
 
 int_invinst:
     pusha 0x1
@@ -40,7 +40,7 @@ int_devamch:
     pusha 0x6
     putda 0x0
     drop
-    iretc 0x0
+    iretac 0x0
 
 interrupt_table:
     _int_timer dw &int_timer

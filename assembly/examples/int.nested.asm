@@ -37,7 +37,7 @@ int0:
 
     int 0x8
     
-    iretc 0x0
+    iretac 0x0
 
 int1:
     pusha 0x1
@@ -48,7 +48,7 @@ int1:
 
     int 0x9
 
-    iretc 0x0
+    iretac 0x0
 
 int2:
     pusha 0x2
@@ -59,7 +59,7 @@ int2:
 
     int 0xa
 
-    iretc 0x0
+    iretac 0x0
 
 int3:
     pusha 0x3
@@ -68,7 +68,7 @@ int3:
     drop
     drop
 
-    iretc 0x0
+    iretac 0x0
 
 code:
     pusha &interrupt_table

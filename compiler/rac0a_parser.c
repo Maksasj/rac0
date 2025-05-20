@@ -747,7 +747,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
 
     // interrupt
     PARSE_INSTRUCTION_ARG("int", RAC0_INT_OPCODE);
-    PARSE_INSTRUCTION_ARG("iretc", RAC0_IRETC_OPCODE);
+    PARSE_INSTRUCTION_ARG("iretac", RAC0_IRETAC_OPCODE);
 
     parser->lexer = backup;
 

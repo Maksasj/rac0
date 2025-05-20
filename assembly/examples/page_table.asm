@@ -2,7 +2,7 @@ jmpa &code
 
 int_print_top: // (value pc)
     putda 0x0
-    iretc 0x0
+    iretac 0x0
 
 interrupt_table:
     _0_int_timer dw 0x0
