@@ -61,6 +61,7 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_XOR_OPCODE         ((rac0_opcode_t) 35)
 #define RAC0_JMPA_OPCODE        ((rac0_opcode_t) 36) // flow
 #define RAC0_JMPT_OPCODE        ((rac0_opcode_t) 37)
+#define RAC0_JMPTC_OPCODE       ((rac0_opcode_t) 52)
 #define RAC0_JZA_OPCODE         ((rac0_opcode_t) 38)
 #define RAC0_JNZA_OPCODE        ((rac0_opcode_t) 39)
 #define RAC0_JNEGA_OPCODE       ((rac0_opcode_t) 40)
@@ -72,7 +73,7 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_PUTDA_OPCODE       ((rac0_opcode_t) 46)
 #define RAC0_PUTDT_OPCODE       ((rac0_opcode_t) 47)
 #define RAC0_INT_OPCODE         ((rac0_opcode_t) 48) // interrupt
-#define RAC0_IRET_OPCODE        ((rac0_opcode_t) 49)
+#define RAC0_IRETC_OPCODE        ((rac0_opcode_t) 49)
 
 rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode);
 

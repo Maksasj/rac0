@@ -210,6 +210,8 @@ rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
         return 0;
     } else if(opcode == RAC0_JMPT_OPCODE) {
         return 0;
+    } else if(opcode == RAC0_JMPTC_OPCODE) {
+        return 0;
     } else if(opcode == RAC0_JZA_OPCODE) {
         return 0;
     } else if(opcode == RAC0_JNZA_OPCODE) {
@@ -232,7 +234,7 @@ rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
         return 1;
     } else if(opcode == RAC0_INT_OPCODE) {
         return 0;
-    } else if(opcode == RAC0_IRET_OPCODE) {
+    } else if(opcode == RAC0_IRETC_OPCODE) {
         return 1;
     } else {
         return 0;

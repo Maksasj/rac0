@@ -729,6 +729,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     // flow
     PARSE_INSTRUCTION_ARG("jmpa", RAC0_JMPA_OPCODE);
     PARSE_INSTRUCTION_NOARG("jmpt", RAC0_JMPT_OPCODE);
+    PARSE_INSTRUCTION_NOARG("jmptc", RAC0_JMPT_OPCODE);
     PARSE_INSTRUCTION_ARG("jza", RAC0_JZA_OPCODE);
     PARSE_INSTRUCTION_ARG("jnza", RAC0_JNZA_OPCODE);
     PARSE_INSTRUCTION_ARG("jnega", RAC0_JNEGA_OPCODE);
@@ -744,7 +745,7 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
 
     // interrupt
     PARSE_INSTRUCTION_ARG("int", RAC0_INT_OPCODE);
-    PARSE_INSTRUCTION_ARG("iret", RAC0_IRET_OPCODE);
+    PARSE_INSTRUCTION_ARG("iretc", RAC0_IRETC_OPCODE);
 
     parser->lexer = backup;
 
