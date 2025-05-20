@@ -705,8 +705,10 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
 
     // memory
     PARSE_INSTRUCTION_NOARG("store", RAC0_STORE_OPCODE);
+    PARSE_INSTRUCTION_ARG("storearac", RAC0_STOREARAC_OPCODE);
     PARSE_INSTRUCTION_ARG("storea", RAC0_STOREA_OPCODE);
     PARSE_INSTRUCTION_NOARG("load", RAC0_LOAD_OPCODE);
+    PARSE_INSTRUCTION_ARG("loadarac", RAC0_LOADARAC_OPCODE);
     PARSE_INSTRUCTION_ARG("loada", RAC0_LOADA_OPCODE);
 
     // arithmetic

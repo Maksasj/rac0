@@ -12,6 +12,29 @@ rac0oc_entry:
     setidtst
     drop
 
+    // TODO setuping staring processes
+    pusha &test_process_1 // (iret)
+    pusha 0x0 // (iret) (0x0)
+    storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
+    drop
+
+    pusha &test_process_2 // (iret)
+    pusha 0x1 // (iret) (0x0)
+    storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
+    drop
+
+    pusha &test_process_3 // (iret)
+    pusha 0x2 // (iret) (0x0)
+    storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
+    drop
+
+    // halt
+    // 
+    // pusha &test_process_2 // (iret)
+    // 
+    // pusha &test_process_3 // (iret)
+// 
+
     jmpa &rac0oc_schedule_routine
 
     halt
@@ -22,9 +45,11 @@ rac0oc_schedule_routine:
 
     // restore stack
     // jump to active process
-    // loada &process_0_iret
-    // jmptc
-    halt
+    loada &active_process_index // ( index )
+    loadarac &process_iret_table // push(process_iret_table[index]) | ( iret ) 
+    
+    jmptc
+    // halt
 
 // Interrupt handlers
 rac0oc_int_timer_handler:
@@ -90,6 +115,7 @@ _m_5 db "===== USER SPACE ======"
 rac0oc_user_space:
     // ...
 
+_m_12 db "!test_process_1!"
 test_process_1:
     test_process_1_loop:
         // print 1
@@ -100,6 +126,7 @@ test_process_1:
         // jmpa &test_process_1_loop
         halt
 
+_m_13 db "!test_process_1!"
 test_process_2:
     test_process_2_loop:
         // print 2
@@ -110,6 +137,7 @@ test_process_2:
         //jmpa &test_process_2_loop
         halt
 
+_m_14 db "!test_process_1!"
 test_process_3:
     test_process_3_loop:
         // print 3

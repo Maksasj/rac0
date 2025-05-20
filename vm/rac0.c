@@ -139,6 +139,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
     rac0_value_t page_flag = rac0_status_bit_is_set(cpu, RAC0_STATUS_PAGE_MODE_BIT_MASK); 
 
     if(!rac0_opcode_valid(opcode)) {
+        PLUM_LOG(PLUM_EXPERIMENTAL, "INSTRUCTION IS NOT VALID rac0_opcode_valid()");
         rac0_cpu_throw_interrupt(cpu, memory, RAC0_INTERRUPT_INVINST);
         rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
         goto cont;
@@ -248,6 +249,22 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, page_flag);
         *((rac0_value_t*) (memory->memory + physical_address)) = value;
         goto inc;
+    } else if(opcode == RAC0_STOREARAC_OPCODE) {
+        rac0_value_t value = rac0_stack_get_next(&cpu->stack);
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t virtual_address = inst.value;
+
+        if(!rac0_valid_memory_access(memory, virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+
+        rac0_stack_drop(&cpu->stack);
+
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, page_flag);
+        ((rac0_value_t*) (memory->memory + physical_address))[top] = value;
+        goto inc;
     } else if(opcode == RAC0_STOREA_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t virtual_address = inst.value;
@@ -273,6 +290,21 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
         rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, page_flag);
         rac0_value_t value = *((rac0_value_t*) (memory->memory + physical_address));
+        rac0_stack_push(&cpu->stack, value);
+        goto inc;
+    } else if(opcode == RAC0_LOADARAC_OPCODE) {
+        rac0_value_t index = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t virtual_address = inst.value ;
+        
+        if(!rac0_valid_memory_access(memory, virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+        rac0_stack_drop(&cpu->stack);
+
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, page_flag);
+        rac0_value_t value = ((rac0_value_t*) (memory->memory + physical_address))[index];
         rac0_stack_push(&cpu->stack, value);
         goto inc;
     } else if(opcode == RAC0_LOADA_OPCODE) {
@@ -478,11 +510,11 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
     cont:
 
-    // PLUM_LOG(PLUM_TRACE, "%llu. STACK [ stack size: %llu ] [ top: 0x%.16llx ] [next: 0x%.16llx ]", cpu->cycle, cpu->stack.top, rac0_stack_get_top(&cpu->stack), rac0_stack_get_next(&cpu->stack));
-    // PLUM_LOG(PLUM_TRACE, "%llu. INST [ 0x%.4x ] 0x%.16llx %s", cpu->cycle, opcode, inst.value, RAC0_OPCODE_STRING[opcode]);
-    // PLUM_LOG(PLUM_TRACE, "%llu. CPU [ pc: 0x%.16llx ] [ idt: %llu ] [ idts: %llu ] [ iretc: %.16llx ] [ status: %llu ] [ timer: %llu ]", cpu->cycle, cpu->pc, cpu->idt, cpu->idts, cpu->iret, cpu->status, cpu->timer);
-    // PLUM_LOG(PLUM_TRACE, "%llu. MEMORY [ ptba: 0x%.16llx ] [ pts: %llu ] [ ptps: %llu ]", cpu->cycle, memory->ptba, memory->pts, memory->ptps);
-    // PLUM_LOG(PLUM_TRACE, "%llu. DEVICE [ device: %llu ] [ devc: %llu ]", cpu->cycle, device_selector->device, device_selector->devc);
+    PLUM_LOG(PLUM_TRACE, "%llu. STACK [ stack size: %llu ] [ top: 0x%.16llx ] [next: 0x%.16llx ]", cpu->cycle, cpu->stack.top, rac0_stack_get_top(&cpu->stack), rac0_stack_get_next(&cpu->stack));
+    PLUM_LOG(PLUM_TRACE, "%llu. INST [ 0x%.4x ] 0x%.16llx %s", cpu->cycle, opcode, inst.value, RAC0_OPCODE_STRING[opcode]);
+    PLUM_LOG(PLUM_TRACE, "%llu. CPU [ pc: 0x%.16llx ] [ idt: %llu ] [ idts: %llu ] [ iretc: %.16llx ] [ status: %llu ] [ timer: %llu ]", cpu->cycle, cpu->pc, cpu->idt, cpu->idts, cpu->iret, cpu->status, cpu->timer);
+    PLUM_LOG(PLUM_TRACE, "%llu. MEMORY [ ptba: 0x%.16llx ] [ pts: %llu ] [ ptps: %llu ]", cpu->cycle, memory->ptba, memory->pts, memory->ptps);
+    PLUM_LOG(PLUM_TRACE, "%llu. DEVICE [ device: %llu ] [ devc: %llu ]", cpu->cycle, device_selector->device, device_selector->devc);
 
     ++cpu->cycle;
 }

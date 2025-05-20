@@ -43,9 +43,11 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_DROP_OPCODE        ((rac0_opcode_t) 17)
 #define RAC0_SWAP_OPCODE        ((rac0_opcode_t) 18)
 #define RAC0_STORE_OPCODE       ((rac0_opcode_t) 19) // memory
+#define RAC0_STOREARAC_OPCODE   ((rac0_opcode_t) 54) 
 #define RAC0_STOREA_OPCODE      ((rac0_opcode_t) 20)
 #define RAC0_LOAD_OPCODE        ((rac0_opcode_t) 21)
 #define RAC0_LOADA_OPCODE       ((rac0_opcode_t) 22)
+#define RAC0_LOADARAC_OPCODE    ((rac0_opcode_t) 53)
 #define RAC0_ADD_OPCODE         ((rac0_opcode_t) 23) // arithmetic
 #define RAC0_SUB_OPCODE         ((rac0_opcode_t) 24)
 #define RAC0_MUL_OPCODE         ((rac0_opcode_t) 25)
@@ -154,7 +156,9 @@ static char* RAC0_OPCODE_STRING[] = {
 
     "SETIRETT",
     "PUSHIRET",
-    "JMPTC"
+    "JMPTC",
+    "LOADARAC",
+    "STOREARAC",
 };
 
 #endif

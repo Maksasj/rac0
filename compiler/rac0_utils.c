@@ -174,9 +174,13 @@ rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
         return 0;
     } else if(opcode == RAC0_STORE_OPCODE) {
         return 0;
+    } else if(opcode == RAC0_STOREARAC_OPCODE) {
+        return 0;
     } else if(opcode == RAC0_STOREA_OPCODE) {
         return 0;
     } else if(opcode == RAC0_LOAD_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_LOADARAC_OPCODE) {
         return 0;
     } else if(opcode == RAC0_LOADA_OPCODE) {
         return 0;

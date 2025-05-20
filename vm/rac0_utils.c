@@ -122,7 +122,7 @@ rac0a_boolean_t rac0a_in_range_include(char value, char min, char max) {
 }
 
 rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode) {
-    return opcode >= 1 && opcode <= 52;
+    return opcode >= 1 && opcode <= 54;
 }
 
 rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
@@ -168,11 +168,15 @@ rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
         return 0;
     } else if(opcode == RAC0_STORE_OPCODE) {
         return 0;
+    } else if(opcode == RAC0_STOREARAC_OPCODE) {
+        return 0;
     } else if(opcode == RAC0_STOREA_OPCODE) {
         return 0;
     } else if(opcode == RAC0_LOAD_OPCODE) {
         return 0;
     } else if(opcode == RAC0_LOADA_OPCODE) {
+        return 0;
+    } else if(opcode == RAC0_LOADARAC_OPCODE) {
         return 0;
     } else if(opcode == RAC0_ADD_OPCODE) {
         return 0;
