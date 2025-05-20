@@ -28,13 +28,6 @@ rac0oc_entry:
     storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
     drop
 
-    // halt
-    // 
-    // pusha &test_process_2 // (iret)
-    // 
-    // pusha &test_process_3 // (iret)
-// 
-
     jmpa &rac0oc_schedule_routine
 
     halt
@@ -47,7 +40,6 @@ rac0oc_schedule_routine:
     // jump to active process
     loada &active_process_index // ( index )
     loadarac &process_iret_table // push(process_iret_table[index]) | ( iret ) 
-    
     jmptc
     // halt
 
