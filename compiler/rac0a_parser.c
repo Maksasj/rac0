@@ -752,7 +752,8 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     return rac0a_parse_result_error("Failed to parse instruction, unknown instruction", parser->lexer.pointer);
 }
 
-rac0a_parse_result_t rac0a_parse_empty_array_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
+// TODO
+rac0a_parse_result_t rac0a_parse_array_size_definition(rac0a_parser_t* parser, rac0_value_t* number) {
     rac0a_lexer_t backup = parser->lexer;
 
     if(rac0a_parse_l_squarebracket(parser).code == RAC0A_ERROR) {
@@ -760,20 +761,40 @@ rac0a_parse_result_t rac0a_parse_empty_array_definition(rac0a_parser_t* parser, 
         return rac0a_parse_result_error("Failed to parse empty byte array definition, expected '[' symbol", parser->lexer.pointer);
     }
 
-    rac0_value_t number;
-    if(rac0a_parse_number(parser, &number).code == RAC0A_ERROR) {
+    if(rac0a_parse_number(parser, number).code == RAC0A_ERROR) {
         parser->lexer = backup;
         return rac0a_parse_result_error("Failed to parse empty byte array definition, expected number", parser->lexer.pointer);
     }
-
 
     if(rac0a_parse_r_squarebracket(parser).code == RAC0A_ERROR) {
         parser->lexer = backup;
         return rac0a_parse_result_error("Failed to parse empty byte array definition, expected ']' symbol",  parser->lexer.pointer);
     }
     
-    value->array = calloc(number, 1);
-    value->size = number;
+    return rac0a_parse_result_ok();
+}
+
+rac0a_parse_result_t rac0a_parse_empty_array_definition(rac0a_parser_t* parser, rac0a_hl_byte_def_statement_t* value) {
+    rac0a_lexer_t backup = parser->lexer;
+
+    rac0_value_t final_number = 0;
+
+    if(rac0a_parse_array_size_definition(parser, &final_number).code == RAC0A_ERROR) {
+        parser->lexer = backup;
+        return rac0a_parse_result_error("Failed to parse array size", parser->lexer.pointer);
+    }
+
+    while(1) {
+        rac0_value_t number = 0;
+
+        if(rac0a_parse_array_size_definition(parser, &number).code == RAC0A_ERROR)
+            break;
+
+        final_number *= number;
+    }
+
+    value->array = calloc(final_number, 1);
+    value->size = final_number;
 
     return rac0a_parse_result_ok();
 }

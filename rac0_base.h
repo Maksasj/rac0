@@ -153,7 +153,8 @@ static char* RAC0_OPCODE_STRING[] = {
     "IRET",
 
     "SETIRETT",
-    "PUSHIRET"
+    "PUSHIRET",
+    "JMPTC"
 };
 
 #endif

@@ -22,8 +22,9 @@ rac0oc_schedule_routine:
 
     // restore stack
     // jump to active process
-    loada &process_0_iret
-    jmptc
+    // loada &process_0_iret
+    // jmptc
+    halt
 
 // Interrupt handlers
 rac0oc_int_timer_handler:
@@ -66,29 +67,24 @@ _m_3 db "==== PROCESS SCHEDULING ===="
 
 _m_4 db "==== PROCESS TABLE ===="
 rac0oc_process_table:
-    process_0_status dw $PROCESS_DEAD
-    process_0_identifier dw 0x0
-    process_0_iret dw &test_process_1
-    process_0_child db[0x40] // 0x40 -> 64 bits -> 8 words
+    _m_6 db "!process_status_table!"
+    process_status_table db[0x10][0x8] // -> process_status_table dw[16]
+
+    _m_7 db "!process_identifier_table!"
+    process_identifier_table db[0x10][0x8]
+
+    _m_8 db "!process_iret_table!"
+    process_iret_table db[0x10][0x8]
+
+    _m_9 db "!process_child_table!"
+    process_child_table db[0x10][0x40] // 0x40 -> 64 bits -> 8 words // -> process_status_table dw[16][8]
     // process_0_page_table dw 0x0
-    process_0_stack_size dw 0x0
-    process_0_stack_data db[0x2000] // 0x2000 -> 8192 bits -> 1024 words
 
-    process_1_status dw $PROCESS_DEAD
-    process_1_identifier dw 0x1
-    process_1_iret dw &test_process_2
-    process_1_child db[0x40] // 0x40 -> 64 bits -> 8 words
-    // process_1_page_table dw 0x0
-    process_1_stack_size dw 0x0
-    process_1_stack_data db[0x2000] // 0x2000 -> 8192 bits -> 1024 words
+    _m_10 db "!process_stack_size_table!"
+    process_stack_size_table db[0x10][0x8]
 
-    process_2_status dw $PROCESS_DEAD
-    process_2_identifier dw 0x2
-    process_2_iret dw &test_process_3
-    process_2_child db[0x40] // 0x40 -> 64 bits -> 8 words
-    // process_2_page_table dw 0x0
-    process_2_stack_size dw 0x0
-    process_2_stack_data db[0x2000] // 0x2000 -> 8192 bits -> 1024 words
+    _m_11 db "!process_stack_data_table!"
+    process_stack_data_table db[0x10][0x2000] // 0x2000 -> 8192 bits -> 1024 words
 
 _m_5 db "===== USER SPACE ======"
 rac0oc_user_space:
@@ -101,7 +97,7 @@ test_process_1:
         putda 0x0
         drop
 
-        jmpa &test_process_1_loop
+        // jmpa &test_process_1_loop
         halt
 
 test_process_2:
@@ -110,8 +106,8 @@ test_process_2:
         pusha 0x2
         putda 0x0
         drop
-
-        jmpa &test_process_2_loop
+ 
+        //jmpa &test_process_2_loop
         halt
 
 test_process_3:
@@ -121,5 +117,5 @@ test_process_3:
         putda 0x0
         drop
 
-        jmpa &test_process_3_loop
+        // jmpa &test_process_3_loop
         halt
