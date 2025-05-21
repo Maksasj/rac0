@@ -28,7 +28,11 @@ rac0oc_entry:
     storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
     drop
 
-    jmpa &rac0oc_schedule_routine
+    // enable timer
+    settta 0x12C // 0x12C (16) = 300 (10)
+    setstbta $STATUS_TIMER_MODE_BIT_MASK
+
+    jmpa &test_process_1
 
     halt
 
@@ -45,7 +49,7 @@ _m_0 db "===== KERNEL CODE ====="
 
 _m_3 db "==== PROCESS SCHEDULING ===="
     active_process_index dw 0x0
-
+    
     tmp_process_stack_size dw 0x0
     tmp_process_stack_data db[0x2000]
 
@@ -60,6 +64,13 @@ rac0oc_schedule_routine:
     storesta &tmp_process_stack_data // store stack data
     clearst
 
+    // get iret
+    pushiret // (iret)
+    dropiret
+    loada &active_process_index // (iret) ( index )
+    storearac &process_iret_table 
+    drop
+
     // lets load process stack
     // loadssa &tmp_process_stack_size 
     // loadsta &tmp_process_stack_data
@@ -67,23 +78,20 @@ rac0oc_schedule_routine:
 
     // restore stack
     // jump to active process
-    loada &active_process_index // ( index )
+    loada &active_process_index
     loadarac &process_iret_table // push(process_iret_table[index]) | ( iret ) 
     pushiretc // we save iret to the iret stack
-    
-    // since iret stores process iret we can prepare stack and other stuff
+
+    // since iret stack already stores process iret we can prepare stack and other stuff
     // load stack
     loadssa &tmp_process_stack_size
     loadsta &tmp_process_stack_data
-
+    
     setstbta $STATUS_TIMER_MODE_BIT_MASK // enable timer
     iretac 0x0
 
 // Interrupt handlers
 rac0oc_int_timer_handler:
-    we need to save curret process iret
-    // dropiret // nuke iret value
-
     // timer interrupt delegates timer handling to schedule routine 
     jmpa &rac0oc_schedule_routine
 
