@@ -762,6 +762,8 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     PARSE_INSTRUCTION_ARG("storessa", RAC0_STORESSA_OPCODE);
     PARSE_INSTRUCTION_ARG("loadssa", RAC0_LOADSSA_OPCODE);
     PARSE_INSTRUCTION_NOARG("clearst", RAC0_CLEARST_OPCODE);
+    PARSE_INSTRUCTION_NOARG("dropiret", RAC0_DROPIRET_OPCODE);
+    PARSE_INSTRUCTION_NOARG("pushiretc", RAC0_PUSHIRETC_OPCODE);
 
     parser->lexer = backup;
 

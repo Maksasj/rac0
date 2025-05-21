@@ -258,6 +258,10 @@ rac0_value_t rac0_opcode_privileged(rac0_opcode_t opcode) {
         return 0;
     } else if(opcode == RAC0_SETTTA_OPCODE) {
         return 1;
+    } else if(opcode == RAC0_DROPIRET_OPCODE) {
+        return 1;
+    } else if(opcode == RAC0_PUSHIRETC_OPCODE) {
+        return 1;
     } else { 
         return 0;
     }

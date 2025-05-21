@@ -633,6 +633,13 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         rac0_value_t value = inst.value;
         cpu->timer = value;
         goto inc;
+    } else if(opcode == RAC0_DROPIRET_OPCODE) {
+        rac0_stack_drop(&cpu->iret);
+        goto inc;
+    } else if(opcode == RAC0_PUSHIRETC_OPCODE) {
+        rac0_value_t value = rac0_stack_get_top(&cpu->stack);
+        rac0_stack_drop(&cpu->stack);
+        rac0_stack_push(&cpu->iret, value);
     } else {
         PLUM_LOG(PLUM_ERROR, "[ 0x%.16llx ] Opcode is not implemented %.4x", cpu->pc, opcode);
         rac0_set_status_bit(cpu, RAC0_STATUS_HALTED_BIT_MASK, 1);

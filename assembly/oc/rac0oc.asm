@@ -80,6 +80,8 @@ rac0oc_int_timer_handler:
     // timer interrupt delegates timer handling to schedule routine 
     // (iret)
     halt
+
+    dropiret
     jmpa &rac0oc_schedule_routine
 
 rac0oc_int_invinst_handler:
