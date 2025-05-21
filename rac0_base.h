@@ -88,6 +88,7 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_STORESSA_OPCODE    ((rac0_opcode_t) 63)
 #define RAC0_CLEARST_OPCODE     ((rac0_opcode_t) 64)
 #define RAC0_LOADSSA_OPCODE     ((rac0_opcode_t) 65)
+#define RAC0_SETTTA_OPCODE      ((rac0_opcode_t) 66)
 
 rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode);
 
@@ -182,7 +183,8 @@ static char* RAC0_OPCODE_STRING[] = {
     "SETSTSSC",
     "STORESSA",
     "CLEARST",
-    "LOADSSA"
+    "LOADSSA",
+    "SETTTA"
 };
 
 #endif

@@ -31,28 +31,55 @@ rac0oc_entry:
     jmpa &rac0oc_schedule_routine
 
     halt
-    
+
 _m_0 db "===== KERNEL CODE ====="
+
+@constval STATUS_MODE_BIT_MASK 0b0000000000000000000000000000000000000000000000000000000000000001
+@constval STATUS_HALTED_BIT_MASK 0b0000000000000000000000000000000000000000000000000000000000000010
+@constval STATUS_TIMER_MODE_BIT_MASK 0b0000000000000000000000000000000000000000000000000000000000000100
+@constval STATUS_PAGE_MODE_BIT_MASK 0b0000000000000000000000000000000000000000000000000000000000001000
+
+@constval PROCESS_DEAD 0x0 
+@constval PROCESS_ALIVE 0x1
+@constval PROCESS_BLOCKED 0x2
+
+_m_3 db "==== PROCESS SCHEDULING ===="
+    active_process_index dw 0x0
+
+    tmp_process_stack_size dw 0x0
+    tmp_process_stack_data db[0x2000]
+
 rac0oc_schedule_routine:
-    storessa 0x00000000000ff078 // store stack size
-    storesta 0x00000000000ff080 // store stack data
+    // Firstly we reset timer and disable it for now
+    setstbfa $STATUS_TIMER_MODE_BIT_MASK
+    settta 0x12C // 0x12C (16) = 300 (10)
+
+    // backup stack
+    // firstly we backup into a temporary variable
+    storessa &tmp_process_stack_size // store stack size
+    storesta &tmp_process_stack_data // store stack data
     clearst
 
-    loadssa 0x00000000000ff078 // load stack size 
-    loadsta 0x00000000000ff080 // load stack data
-
-    halt
+    // lets load process stack
+    // loadssa &tmp_process_stack_size 
+    // loadsta &tmp_process_stack_data
+    // halt
 
     // restore stack
     // jump to active process
     loada &active_process_index // ( index )
     loadarac &process_iret_table // push(process_iret_table[index]) | ( iret ) 
+    setirett
+
+    setstbta $STATUS_TIMER_MODE_BIT_MASK // enable timer
     jmptc
     // halt
 
 // Interrupt handlers
 rac0oc_int_timer_handler:
     // timer interrupt delegates timer handling to schedule routine 
+    // (iret)
+    halt
     jmpa &rac0oc_schedule_routine
 
 rac0oc_int_invinst_handler:
@@ -60,6 +87,7 @@ rac0oc_int_invinst_handler:
 
 rac0oc_int_priv_handler:
     halt
+
 rac0oc_int_invint_handler:
     halt
 
@@ -72,22 +100,16 @@ rac0oc_int_invdev_handler:
 rac0oc_int_devamch_handler:
     halt
 
+    
 _m_2 db "=== INTERRUPT TABLE ==="
 rac0oc_interrupt_table:
-    rac0oc_int_timer dw &rac0oc_int_timer
-    rac0oc_int_invinst dw &rac0oc_int_invinst
-    rac0oc_int_priv dw &rac0oc_int_priv
-    rac0oc_int_invint dw &rac0oc_int_invint
-    rac0oc_int_invpacc dw &rac0oc_int_invpacc
-    rac0oc_int_invdev dw &rac0oc_int_invdev
-    rac0oc_int_devamch dw &rac0oc_int_devamch
-
-_m_3 db "==== PROCESS SCHEDULING ===="
-    active_process_index dw 0x0
-
-@constval PROCESS_DEAD 0x0 
-@constval PROCESS_ALIVE 0x1
-@constval PROCESS_BLOCKED 0x2
+    rac0oc_int_timer dw &rac0oc_int_timer_handler
+    rac0oc_int_invinst dw &rac0oc_int_invinst_handler
+    rac0oc_int_priv dw &rac0oc_int_priv_handler
+    rac0oc_int_invint dw &rac0oc_int_invint_handler
+    rac0oc_int_invpacc dw &rac0oc_int_invpacc_handler
+    rac0oc_int_invdev dw &rac0oc_int_invdev_handler
+    rac0oc_int_devamch dw &rac0oc_int_devamch_handler
 
 _m_4 db "==== PROCESS TABLE ===="
 rac0oc_process_table:

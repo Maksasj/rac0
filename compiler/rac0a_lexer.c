@@ -79,10 +79,14 @@ rac0a_lex_result_t rac0a_lex_label(rac0a_token_t* token, rac0a_lexer_t* lexer) {
     ++lexer->pointer;
 
     while(1) {
-        if(!isalpha(lexer->input[lexer->pointer]) && lexer->input[lexer->pointer] != '_' && !isdigit(lexer->input[lexer->pointer]))
-            break;
+        char character = lexer->input[lexer->pointer];
 
-        ++lexer->pointer;
+        if(isalpha(character) || (character == '_') || isdigit(character)) {
+            ++lexer->pointer;
+            continue;
+        }
+        
+        break;
     }
 
     cont:
@@ -93,7 +97,7 @@ rac0a_lex_result_t rac0a_lex_label(rac0a_token_t* token, rac0a_lexer_t* lexer) {
     }
 
     token->type = RAC0A_TOKEN_LABEL;
-    token->lexeme = rac0a_string_copy_len(&lexer->input[start], (lexer->pointer - 1) - start);
+    token->lexeme = rac0a_string_copy_len(lexer->input + start, (lexer->pointer) - start);
 
     return (rac0a_lex_result_t) { RAC0A_OK };
 }
@@ -118,7 +122,7 @@ rac0a_lex_result_t rac0a_lex_hex_number(rac0a_token_t* token, rac0a_lexer_t* lex
     }
 
     token->type = RAC0A_TOKEN_NUMBER;
-    token->lexeme = rac0a_string_copy_len(&lexer->input[start], (lexer->pointer - 1) - start);
+    token->lexeme = rac0a_string_copy_len(&lexer->input[start], lexer->pointer - start);
 
     return (rac0a_lex_result_t) { RAC0A_OK };
 }
@@ -143,7 +147,7 @@ rac0a_lex_result_t rac0a_lex_binary_number(rac0a_token_t* token, rac0a_lexer_t* 
     }
 
     token->type = RAC0A_TOKEN_NUMBER;
-    token->lexeme = rac0a_string_copy_len(&lexer->input[start], (lexer->pointer - 1) - start);
+    token->lexeme = rac0a_string_copy_len(&lexer->input[start], lexer->pointer - start);
 
     return (rac0a_lex_result_t) { RAC0A_OK };
 }

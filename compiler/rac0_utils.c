@@ -93,7 +93,7 @@ char* rac0a_string_copy(const char* input) {
 char* rac0a_string_copy_len(const char* input, unsigned long long size) {
     unsigned long long len = size + 1;
     char* out =  calloc(len, sizeof(char));
-    memcpy(out, input, len);
+    memcpy(out, input, size);
     return out;
 }
 
