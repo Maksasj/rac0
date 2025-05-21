@@ -69,19 +69,22 @@ rac0oc_schedule_routine:
     // jump to active process
     loada &active_process_index // ( index )
     loadarac &process_iret_table // push(process_iret_table[index]) | ( iret ) 
-    setirett
+    pushiretc // we save iret to the iret stack
+    
+    // since iret stores process iret we can prepare stack and other stuff
+    // load stack
+    loadssa &tmp_process_stack_size
+    loadsta &tmp_process_stack_data
 
     setstbta $STATUS_TIMER_MODE_BIT_MASK // enable timer
-    jmptc
-    // halt
+    iretac 0x0
 
 // Interrupt handlers
 rac0oc_int_timer_handler:
-    // timer interrupt delegates timer handling to schedule routine 
-    // (iret)
-    halt
+    we need to save curret process iret
+    // dropiret // nuke iret value
 
-    dropiret
+    // timer interrupt delegates timer handling to schedule routine 
     jmpa &rac0oc_schedule_routine
 
 rac0oc_int_invinst_handler:
@@ -140,6 +143,13 @@ rac0oc_user_space:
 
 _m_12 db "!test_process_1!"
 test_process_1:
+    pusha 0x1
+    pusha 0x2
+    pusha 0x3
+    pusha 0x4
+    pusha 0x5
+    pusha 0x6
+
     test_process_1_loop:
         // print 1
         pusha 0x1

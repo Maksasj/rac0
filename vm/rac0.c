@@ -137,9 +137,9 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
     rac0_value_t halted_flag = rac0_status_bit_is_set(cpu, RAC0_STATUS_HALTED_BIT_MASK); 
     rac0_value_t timer_flag = rac0_status_bit_is_set(cpu, RAC0_STATUS_TIMER_MODE_BIT_MASK); 
     rac0_value_t page_flag = rac0_status_bit_is_set(cpu, RAC0_STATUS_PAGE_MODE_BIT_MASK); 
-
+    
     if(!rac0_opcode_valid(opcode)) {
-        PLUM_LOG(PLUM_EXPERIMENTAL, "INSTRUCTION IS NOT VALID rac0_opcode_valid()");
+        PLUM_LOG(PLUM_ERROR, "INSTRUCTION IS NOT VALID rac0_opcode_valid() %d", opcode);
         rac0_cpu_throw_interrupt(cpu, memory, RAC0_INTERRUPT_INVINST);
         rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
         goto cont;
@@ -640,6 +640,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         rac0_value_t value = rac0_stack_get_top(&cpu->stack);
         rac0_stack_drop(&cpu->stack);
         rac0_stack_push(&cpu->iret, value);
+        goto inc;
     } else {
         PLUM_LOG(PLUM_ERROR, "[ 0x%.16llx ] Opcode is not implemented %.4x", cpu->pc, opcode);
         rac0_set_status_bit(cpu, RAC0_STATUS_HALTED_BIT_MASK, 1);
