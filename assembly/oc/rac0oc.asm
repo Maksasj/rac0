@@ -31,10 +31,17 @@ rac0oc_entry:
     jmpa &rac0oc_schedule_routine
 
     halt
-
+    
 _m_0 db "===== KERNEL CODE ====="
 rac0oc_schedule_routine:
-    // TODO actually choose an active process
+    storessa 0x00000000000ff078 // store stack size
+    storesta 0x00000000000ff080 // store stack data
+    clearst
+
+    loadssa 0x00000000000ff078 // load stack size 
+    loadsta 0x00000000000ff080 // load stack data
+
+    halt
 
     // restore stack
     // jump to active process
@@ -115,7 +122,7 @@ test_process_1:
         putda 0x0
         drop
 
-        // jmpa &test_process_1_loop
+        jmpa &test_process_1_loop
         halt
 
 _m_13 db "!test_process_1!"
@@ -126,7 +133,7 @@ test_process_2:
         putda 0x0
         drop
  
-        //jmpa &test_process_2_loop
+        jmpa &test_process_2_loop
         halt
 
 _m_14 db "!test_process_1!"
@@ -137,5 +144,5 @@ test_process_3:
         putda 0x0
         drop
 
-        // jmpa &test_process_3_loop
+        jmpa &test_process_3_loop
         halt

@@ -325,7 +325,7 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
         rac0_stack_push(&cpu->stack, top + next);
         goto inc;
-    }  else if(opcode == RAC0_SUB_OPCODE) {
+    } else if(opcode == RAC0_SUB_OPCODE) {
         rac0_value_t top = rac0_stack_get_top(&cpu->stack);
         rac0_value_t next = rac0_stack_get_next(&cpu->stack);
         rac0_stack_push(&cpu->stack, top - next);
@@ -499,6 +499,137 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
         cpu->pc = iret;
         goto cont;
+    } else if(opcode == RAC0_SETSTBTA_OPCODE) {
+        rac0_value_t arg = inst.value;
+
+        rac0_set_status_bit(cpu, arg, 1);
+    } else if(opcode == RAC0_SETSTBFA_OPCODE) {
+        rac0_value_t arg = inst.value;
+
+        rac0_set_status_bit(cpu, arg, 0);
+    } else if(opcode == RAC0_LOADSTA_OPCODE) {
+        rac0_value_t src_virtual_address = inst.value;
+
+        if(!rac0_valid_memory_access(memory, src_virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+
+        rac0_value_t src_physical_address = rac0_get_physical_address(memory, src_virtual_address, page_flag);
+
+        memcpy(
+            (rac0_byte_t*) (cpu->stack.values), 
+            (rac0_byte_t*) (memory->memory + src_physical_address), 
+            RAC0_MAX_STACK_SIZE
+        );
+
+        goto inc;
+    } else if(opcode == RAC0_STORESTA_OPCODE) {
+        rac0_value_t dst_virtual_address = inst.value;
+
+        if(!rac0_valid_memory_access(memory, dst_virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+
+        rac0_value_t src_physical_address = rac0_get_physical_address(memory, dst_virtual_address, page_flag);
+
+        memcpy(
+            (rac0_byte_t*) (memory->memory + dst_virtual_address), 
+            (rac0_byte_t*) (cpu->stack.values), 
+            RAC0_MAX_STACK_SIZE
+        );
+
+        goto inc;
+    } else if(opcode == RAC0_IRETCC_OPCODE) {
+        rac0_value_t iret = rac0_stack_get_top(&cpu->iret);
+        rac0_value_t next = rac0_stack_get_next(&cpu->iret);
+        rac0_stack_drop(&cpu->iret);
+        rac0_stack_drop(&cpu->iret);
+
+        if(next) {
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 1);
+        } else {
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+        }
+
+        cpu->pc = iret;
+        goto cont;
+    } else if(opcode == RAC0_LOOP_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+
+        if(top == 0) {
+            rac0_stack_drop(&cpu->stack);
+            rac0_stack_push(&cpu->stack, top - 1);
+            cpu->pc = inst.value;
+            goto cont;
+        } else
+            goto inc;
+    } else if(opcode == RAC0_MCPYBA_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_value_t next = rac0_stack_get_next(&cpu->stack);
+        rac0_value_t arg = inst.value;
+
+        rac0_value_t dst_virtual_address = next;
+        rac0_value_t src_virtual_address = top;
+
+        if(!rac0_valid_memory_access(memory, dst_virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+
+        if(!rac0_valid_memory_access(memory, src_virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+        
+        rac0_value_t dst_physical_address = rac0_get_physical_address(memory, dst_virtual_address, page_flag);
+        rac0_value_t src_physical_address = rac0_get_physical_address(memory, src_virtual_address, page_flag);
+
+        memcpy(
+            (rac0_byte_t*) (memory->memory + dst_physical_address), 
+            (rac0_byte_t*) (memory->memory + src_physical_address), 
+            arg
+        );
+
+        goto inc;
+    } else if(opcode == RAC0_SETSTSSC_OPCODE) {
+        rac0_value_t top = rac0_stack_get_top(&cpu->stack);
+        rac0_stack_drop(&cpu->stack);
+        cpu->stack.top = top;
+
+        goto inc;
+    } else if(opcode == RAC0_STORESSA_OPCODE) {
+        rac0_value_t virtual_address = inst.value;
+
+        if(!rac0_valid_memory_access(memory, virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, page_flag);
+        *((rac0_value_t*) (memory->memory + physical_address)) = cpu->stack.top;
+        goto inc;
+    } else if(opcode == RAC0_LOADSSA_OPCODE) {
+        rac0_value_t virtual_address = inst.value;
+
+        if(!rac0_valid_memory_access(memory, virtual_address, page_flag)) {
+            rac0_cpu_throw_interrupt_step(cpu, memory, RAC0_INTERRUPT_INVPACC);
+            rac0_set_status_bit(cpu, RAC0_STATUS_MODE_BIT_MASK, 0);
+            goto cont;
+        }
+
+        rac0_value_t physical_address = rac0_get_physical_address(memory, virtual_address, page_flag);
+        cpu->stack.top = *((rac0_value_t*) (memory->memory + physical_address));
+        goto inc;
+    } else if(opcode == RAC0_CLEARST_OPCODE) {
+        cpu->stack.top = 0;
+        memset((rac0_byte_t*) cpu->stack.values, 0, RAC0_MAX_STACK_SIZE);
     } else {
         PLUM_LOG(PLUM_ERROR, "[ 0x%.16llx ] Opcode is not implemented %.4x", cpu->pc, opcode);
         rac0_set_status_bit(cpu, RAC0_STATUS_HALTED_BIT_MASK, 1);

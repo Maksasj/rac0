@@ -749,6 +749,19 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     PARSE_INSTRUCTION_ARG("int", RAC0_INT_OPCODE);
     PARSE_INSTRUCTION_ARG("iretac", RAC0_IRETAC_OPCODE);
 
+    // extra
+    PARSE_INSTRUCTION_ARG("setstbta", RAC0_SETSTBTA_OPCODE);
+    PARSE_INSTRUCTION_ARG("setstbfa", RAC0_SETSTBFA_OPCODE);
+    PARSE_INSTRUCTION_ARG("loadsta", RAC0_LOADSTA_OPCODE);
+    PARSE_INSTRUCTION_ARG("storesta", RAC0_STORESTA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("iretcc", RAC0_IRETCC_OPCODE);
+    PARSE_INSTRUCTION_ARG("loop", RAC0_LOOP_OPCODE);
+    PARSE_INSTRUCTION_ARG("mcpyba", RAC0_MCPYBA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("setstssc", RAC0_SETSTSSC_OPCODE);
+    PARSE_INSTRUCTION_ARG("storessa", RAC0_STORESSA_OPCODE);
+    PARSE_INSTRUCTION_ARG("loadssa", RAC0_LOADSSA_OPCODE);
+    PARSE_INSTRUCTION_NOARG("clearst", RAC0_CLEARST_OPCODE);
+
     parser->lexer = backup;
 
     return rac0a_parse_result_error("Failed to parse instruction, unknown instruction", parser->lexer.pointer);

@@ -75,7 +75,19 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_PUTDA_OPCODE       ((rac0_opcode_t) 46)
 #define RAC0_PUTDT_OPCODE       ((rac0_opcode_t) 47)
 #define RAC0_INT_OPCODE         ((rac0_opcode_t) 48) // interrupt
-#define RAC0_IRETAC_OPCODE        ((rac0_opcode_t) 49)
+#define RAC0_IRETAC_OPCODE      ((rac0_opcode_t) 49)
+
+#define RAC0_SETSTBTA_OPCODE    ((rac0_opcode_t) 55)
+#define RAC0_SETSTBFA_OPCODE    ((rac0_opcode_t) 56)
+#define RAC0_LOADSTA_OPCODE     ((rac0_opcode_t) 57)
+#define RAC0_STORESTA_OPCODE    ((rac0_opcode_t) 58)
+#define RAC0_IRETCC_OPCODE      ((rac0_opcode_t) 59)
+#define RAC0_LOOP_OPCODE        ((rac0_opcode_t) 60)
+#define RAC0_MCPYBA_OPCODE      ((rac0_opcode_t) 61)
+#define RAC0_SETSTSSC_OPCODE    ((rac0_opcode_t) 62)
+#define RAC0_STORESSA_OPCODE    ((rac0_opcode_t) 63)
+#define RAC0_CLEARST_OPCODE     ((rac0_opcode_t) 64)
+#define RAC0_LOADSSA_OPCODE     ((rac0_opcode_t) 65)
 
 rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode);
 
@@ -159,6 +171,18 @@ static char* RAC0_OPCODE_STRING[] = {
     "JMPTC",
     "LOADARAC",
     "STOREARAC",
+
+    "SETSTBTA",
+    "SETSTBFA",
+    "LOADSTA",
+    "STORESTA",
+    "IRETCC",
+    "LOOP",
+    "MCPYBA",
+    "SETSTSSC",
+    "STORESSA",
+    "CLEARST",
+    "LOADSSA"
 };
 
 #endif
