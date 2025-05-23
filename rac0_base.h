@@ -94,6 +94,7 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_MODAC_OPCODE       ((rac0_opcode_t) 69)
 #define RAC0_ADDAC_OPCODE       ((rac0_opcode_t) 70)
 #define RAC0_MULAC_OPCODE       ((rac0_opcode_t) 71)
+#define RAC0_JEQAC_OPCODE       ((rac0_opcode_t) 72)
 
 rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode);
 
@@ -194,7 +195,8 @@ static char* RAC0_OPCODE_STRING[] = {
     "PUSHIRETC",
     "MODAC",
     "ADDAC",
-    "MULAC"
+    "MULAC",
+    "JEQAC"
 };
 
 #endif

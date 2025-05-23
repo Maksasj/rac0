@@ -13,20 +13,38 @@ rac0oc_entry:
     drop
 
     // TODO setuping staring processes
-    pusha &test_process_1 // (iret)
-    pusha 0x0 // (iret) (0x0)
-    storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
-    drop
+    setup_first_process:
+        pusha &test_process_1 // (iret)
+        pusha 0x0 // (iret) (0x0)
+        storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
+        drop
 
-    pusha &test_process_2 // (iret)
-    pusha 0x1 // (iret) (0x0)
-    storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
-    drop
+        pusha $PROCESS_ALIVE // (alive)
+        pusha 0x0 // (alive) (0x0)
+        storearac &process_status_table // process_status_table[0x0] = alive | (alive)
+        drop
 
-    pusha &test_process_3 // (iret)
-    pusha 0x2 // (iret) (0x0)
-    storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
-    drop
+    setup_second_process:
+        pusha &test_process_2 // (iret)
+        pusha 0x1 // (iret) (0x1)
+        storearac &process_iret_table // process_iret_table[0x1] = iret | (iret)
+        drop
+
+        pusha $PROCESS_DEAD // (alive)
+        pusha 0x1 // (alive) (0x1)
+        storearac &process_status_table // process_status_table[0x1] = alive | (alive)
+        drop
+
+    setup_third_process:
+        pusha &test_process_3 // (iret)
+        pusha 0x2 // (iret) (0x2)
+        storearac &process_iret_table // process_iret_table[0x2] = iret | (iret)
+        drop
+
+        pusha $PROCESS_ALIVE // (alive)
+        pusha 0x2 // (alive) (0x2)
+        storearac &process_status_table // process_status_table[0x2] = alive | (alive)
+        drop
 
     // start process scheduler
     jmpa &rac0oc_schedule_routine_select_next_process
@@ -87,13 +105,27 @@ rac0oc_schedule_routine:
             loada &active_process_index // (iret) ( index )
             storearac &process_iret_table 
             drop
-
+    
     rac0oc_schedule_routine_select_next_process:
-        loada &active_process_index
-        addac 0x1
-        modac 0x3
-        storea &active_process_index
-        drop
+        loada &active_process_index // (cindex)
+
+        // iterate over all table entries starting 
+        // from current and find first alive
+        rsrsnp0: 
+            addac 0x1 // (cindex + 1)
+            modac 0x3 // ((cindex + 1) % 3) -> (new_index)
+            dupt // (new_index) (new_index)
+
+            // check next status
+            loadarac &process_status_table // push(process_status_table[new_status]) | (new_index) ( status ) 
+            pusha $PROCESS_ALIVE // (new_index) ( status ) (alive)
+            jeqac &rsrsnp0_break // (new_index)
+
+            jmpa &rsrsnp0
+
+        rsrsnp0_break:
+            storea &active_process_index // (new_index) save index as active process
+            drop
 
     rac0oc_schedule_routine_start_selected_process:
         rac0oc_schedule_routine_start_selected_process_get_iret:
@@ -148,7 +180,6 @@ rac0oc_int_invdev_handler:
 
 rac0oc_int_devamch_handler:
     halt
-
     
 _m_2 db "=== INTERRUPT TABLE ==="
 rac0oc_interrupt_table:
