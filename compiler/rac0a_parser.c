@@ -764,6 +764,9 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     PARSE_INSTRUCTION_NOARG("clearst", RAC0_CLEARST_OPCODE);
     PARSE_INSTRUCTION_NOARG("dropiret", RAC0_DROPIRET_OPCODE);
     PARSE_INSTRUCTION_NOARG("pushiretc", RAC0_PUSHIRETC_OPCODE);
+    PARSE_INSTRUCTION_ARG("modac", RAC0_MODAC_OPCODE);
+    PARSE_INSTRUCTION_ARG("addac", RAC0_ADDAC_OPCODE);
+    PARSE_INSTRUCTION_ARG("mulac", RAC0_MULAC_OPCODE);
 
     parser->lexer = backup;
 
