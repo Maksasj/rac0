@@ -51,14 +51,9 @@ rac0oc_entry:
 
     read_loop:
         fetchdt // (adress) (value)
-
         swap // (value) (adress) 
-
         addac &_m_22 // (value) (adress + &_m_21) 
-
         storeb // *(adress + &_m_21) = (value) // (value) (adress + &_m_21) 
-
-
         subac &_m_22 // (value) (adress) 
         swap // (adress) (value)
         drop // (adress)
@@ -93,6 +88,22 @@ _m_0 db "===== KERNEL CODE ====="
 @constval PROCESS_DEAD 0x0 
 @constval PROCESS_ALIVE 0x1
 @constval PROCESS_BLOCKED 0x2
+
+rac0oc_kernel_malloc:
+rac0oc_kernel_free:
+
+// Arguments: file index
+rac0oc_file_size:
+    // get file size from table
+
+// This procedure finds first available slot in process table and return it
+rac0oc_create_process_index
+
+    // Arguments: file index
+rac0oc_start_process:
+    // firstly load file into a memory
+    // fill process table
+    // pass operation to sceduler
 
 _m_3 db "==== PROCESS SCHEDULING ===="
     active_process_index dw 0x0
