@@ -12,7 +12,7 @@ rac0oc_entry:
     setidtst
     drop
 
-    // TODO setuping staring processes
+    // TODO setuping start processes
     setup_first_process:
         pusha &test_process_1 // (iret)
         pusha 0x0 // (iret) (0x0)
@@ -211,6 +211,23 @@ rac0oc_process_table:
 
     _m_11 db "!process_stack_data_table!"
     process_stack_data_table db[0x10][0x2000] // 0x2000 -> 8192 bits -> 1024 words
+
+_m_20 db "==== RESOURCE TABLE ===="
+rac0oc_resource_table:
+    _m_15 db "!resource_name_table!"
+    resource_name_table db[0x10][0x8] // -> resource_name_table dw[16]
+
+    _m_16 db "!resource_owner_table!"
+    resource_owner_table db[0x10][0x8] // -> resource_owner_table dw[16]
+
+    _m_17 db "!resource_distribute_table!"
+    resource_distribute_table db[0x10][0x8] // -> resource_distribute_table dw[16]
+
+    _m_18 db "!resource_queue_size_table!"
+    resource_queue_size_table db[0x10][0x8] // -> resource_queue_table dw[16]
+    
+    _m_19 db "!resource_queue_table!"
+    resource_queue_table db[0x10][0x2000] // -> resource_queue_table dw[16]
 
 _m_5 db "===== USER SPACE ======"
 rac0oc_user_space:
