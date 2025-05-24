@@ -90,29 +90,29 @@ void* sdl_peripheral_run(void* data) {
     return NULL;
 }
 
-void sdl_peripheral_screen_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
+void sdl_peripheral_screen_device_push(void* device_data, rac0_u64_t address, rac0_value_t value) {
     sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
 
-    if(adress >= 0 && adress < sdl_peripheral_data->resolution_height * sdl_peripheral_data->resolution_width)
-        sdl_peripheral_data->pixels[adress] = value;
+    if(address >= 0 && address < sdl_peripheral_data->resolution_height * sdl_peripheral_data->resolution_width)
+        sdl_peripheral_data->pixels[address] = value;
 }
 
-rac0_value_t sdl_peripheral_screen_device_pool(void* device_data, rac0_u64_t adress) {
+rac0_value_t sdl_peripheral_screen_device_pool(void* device_data, rac0_u64_t address) {
     sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
 
     return 0;
 }
 
-void sdl_peripheral_keyboard_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value) {
+void sdl_peripheral_keyboard_device_push(void* device_data, rac0_u64_t address, rac0_value_t value) {
     sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
 
 }
 
-rac0_value_t sdl_peripheral_keyboard_device_pool(void* device_data, rac0_u64_t adress) {
+rac0_value_t sdl_peripheral_keyboard_device_pool(void* device_data, rac0_u64_t address) {
     sdl_peripheral_devices_data_t* sdl_peripheral_data = (sdl_peripheral_devices_data_t*) device_data; 
 
-    if(adress >= 0 && adress < 322)
-        return sdl_peripheral_data->keys[adress];
+    if(address >= 0 && address < 322)
+        return sdl_peripheral_data->keys[address];
 
     return 0;
 }

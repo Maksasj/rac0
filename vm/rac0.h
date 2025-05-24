@@ -11,8 +11,8 @@
 
 typedef struct {
     void* device_data;
-    void (*push)(void* device_data, rac0_u64_t adress, rac0_value_t value);
-    rac0_value_t (*pool)(void* device_data, rac0_u64_t adress);
+    void (*push)(void* device_data, rac0_u64_t address, rac0_value_t value);
+    rac0_value_t (*pool)(void* device_data, rac0_u64_t address);
 } rac0_device_t;
 
 typedef struct {

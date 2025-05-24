@@ -8,7 +8,7 @@ typedef struct {
 
 }  debug_peripheral_device_data_t;
 
-void debug_console_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value);
-rac0_value_t debug_console_device_pool(void* device_data, rac0_u64_t adress);
+void debug_console_device_push(void* device_data, rac0_u64_t address, rac0_value_t value);
+rac0_value_t debug_console_device_pool(void* device_data, rac0_u64_t address);
 
 #endif

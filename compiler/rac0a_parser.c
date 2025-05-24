@@ -768,6 +768,8 @@ rac0a_parse_result_t rac0a_parse_instruction(rac0a_parser_t* parser, rac0a_hl_in
     PARSE_INSTRUCTION_ARG("addac", RAC0_ADDAC_OPCODE);
     PARSE_INSTRUCTION_ARG("mulac", RAC0_MULAC_OPCODE);
     PARSE_INSTRUCTION_ARG("jeqac", RAC0_JEQAC_OPCODE);
+    PARSE_INSTRUCTION_NOARG("storeb", RAC0_STOREB_OPCODE);
+    PARSE_INSTRUCTION_ARG("subac", RAC0_SUBAC_OPCODE);
 
     parser->lexer = backup;
 

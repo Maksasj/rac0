@@ -17,10 +17,10 @@ void sdl_peripheral_initialize(sdl_peripheral_devices_data_t* data, rac0_value_t
 void sdl_peripheral_free(sdl_peripheral_devices_data_t* data);
 void* sdl_peripheral_run(void* data);
 
-void sdl_peripheral_screen_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value);
-rac0_value_t sdl_peripheral_screen_device_pool(void* device_data, rac0_u64_t adress);
+void sdl_peripheral_screen_device_push(void* device_data, rac0_u64_t address, rac0_value_t value);
+rac0_value_t sdl_peripheral_screen_device_pool(void* device_data, rac0_u64_t address);
 
-void sdl_peripheral_keyboard_device_push(void* device_data, rac0_u64_t adress, rac0_value_t value);
-rac0_value_t sdl_peripheral_keyboard_device_pool(void* device_data, rac0_u64_t adress);
+void sdl_peripheral_keyboard_device_push(void* device_data, rac0_u64_t address, rac0_value_t value);
+rac0_value_t sdl_peripheral_keyboard_device_pool(void* device_data, rac0_u64_t address);
 
 #endif

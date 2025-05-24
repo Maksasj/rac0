@@ -22,6 +22,11 @@ typedef rac0_u8_t rac0_byte_t;
 typedef rac0_u64_t rac0_value_t;
 typedef rac0_u16_t rac0_opcode_t;
 
+#define RAC0OC_DEVICE_PROTOCOL_DEBUG    ((rac0_value_t) 0)
+#define RAC0OC_DEVICE_PROTOCOL_SCREEN   ((rac0_value_t) 1)
+#define RAC0OC_DEVICE_PROTOCOL_KEYBOARD ((rac0_value_t) 2)
+#define RAC0OC_DEVICE_PROTOCOL_DISK     ((rac0_value_t) 3)
+
 #define RAC0_HALT_OPCODE        ((rac0_opcode_t) 1) // cpu
 #define RAC0_WAIT_OPCODE        ((rac0_opcode_t) 2)
 #define RAC0_SETIDTT_OPCODE     ((rac0_opcode_t) 3)
@@ -95,6 +100,8 @@ typedef rac0_u16_t rac0_opcode_t;
 #define RAC0_ADDAC_OPCODE       ((rac0_opcode_t) 70)
 #define RAC0_MULAC_OPCODE       ((rac0_opcode_t) 71)
 #define RAC0_JEQAC_OPCODE       ((rac0_opcode_t) 72)
+#define RAC0_STOREB_OPCODE       ((rac0_opcode_t) 73)
+#define RAC0_SUBAC_OPCODE       ((rac0_opcode_t) 74)
 
 rac0_value_t rac0_opcode_valid(rac0_opcode_t opcode);
 
@@ -196,7 +203,9 @@ static char* RAC0_OPCODE_STRING[] = {
     "MODAC",
     "ADDAC",
     "MULAC",
-    "JEQAC"
+    "JEQAC",
+    "STOREB",
+    "SUBAC"
 };
 
 #endif

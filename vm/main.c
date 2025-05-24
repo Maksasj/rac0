@@ -8,6 +8,7 @@
 
 #include "sdl_peripheral.h"
 #include "debug_peripheral.h"
+#include "disk_peripheral.h"
 
 void rac0_print_help(char* filename) {
     printf("Usage: %s <input file> [options]\n", filename);
@@ -16,6 +17,7 @@ void rac0_print_help(char* filename) {
     printf("    -dumpm          Dump memory after virtual machine haltes\n");
     printf("    -dsdl           Enable SDL peripheral device\n");
     printf("    -ddeb           Enable debug peripheral device\n");
+    printf("    -dfile          Enable file system device\n");
 }
 
 typedef struct {
@@ -23,6 +25,7 @@ typedef struct {
     rac0_value_t dump_memory;
     rac0_value_t sdl_device;
     rac0_value_t debug_console_device;
+    rac0_value_t filesystem_device;
 } rac0_vm_configuration_t;
 
 int main(int argc, char *argv[]) {
@@ -36,6 +39,7 @@ int main(int argc, char *argv[]) {
     configuration.dump_memory = 0;
     configuration.sdl_device = 0;
     configuration.debug_console_device = 0;
+    configuration.filesystem_device = 0;
 
     string_set_t arguments;
     arguments.items.items = (void**) argv;
@@ -55,6 +59,9 @@ int main(int argc, char *argv[]) {
 
     if(string_set_has(&arguments, "-ddeb"))
         configuration.debug_console_device = 1;
+
+    if(string_set_has(&arguments, "-dfile"))
+        configuration.filesystem_device = 1;
 
     // cpu initialization
     rac0_cpu_t cpu = (rac0_cpu_t) {
@@ -128,12 +135,40 @@ int main(int argc, char *argv[]) {
         vector_push(&devices, keyboard);
     }
 
+    // filesystem device
+    disk_device_data_t disk_device = (disk_device_data_t) {
+        .d = {
+            .protocol_type = RAC0OC_DEVICE_PROTOCOL_DISK,
+            .file_entry_count = 0,
+        },
+
+        .data = (void*) malloc(RAC0_MEGABYTE_SIZE),
+
+        // utils
+        .load_file_offset = 0,
+    };
+
+    if(configuration.filesystem_device) {
+        rac0_device_t* disk = (rac0_device_t*) malloc(sizeof(rac0_device_t));
+
+        disk_device_load_file(&disk_device, "target/oc/p0.bin");
+        disk_device_load_file(&disk_device, "target/oc/p1.bin");
+
+        disk->device_data = &disk_device,
+
+        disk->push = disk_device_push;
+        disk->pool = disk_device_pool;
+        vector_push(&devices, disk);
+    }
+
     // device selector initialization
     rac0_device_selector_t device_selector = (rac0_device_selector_t) {
         .devices = (rac0_device_t**) devices.items,
         .device = 0,
         .devc = vector_size(&devices)
     };
+
+    PLUM_LOG(PLUM_EXPERIMENTAL, "%d", device_selector.devc);
 
     // virtual machine initialization
     rac0_vm_t vm = (rac0_vm_t) {
@@ -153,6 +188,9 @@ int main(int argc, char *argv[]) {
         pthread_join(sdl_peripheral_thread, NULL);
         sdl_peripheral_free(&sdl_peripheral);
     }
+
+    if(configuration.filesystem_device)
+        free(disk_device.data);
 
     if(configuration.dump_memory)
         rac0_dump_memory_fmt(vm.memory, "memory.txt");
