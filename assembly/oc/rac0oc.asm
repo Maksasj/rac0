@@ -11,65 +11,61 @@ rac0oc_entry:
     pusha 0x7
     setidtst
     drop
-
-    // TODO setuping start processes
-    // setup_first_process:
-    //     pusha &test_process_1 // (iret)
-    //     pusha 0x0 // (iret) (0x0)
-    //     storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
-    //     drop
-// 
-    //     pusha $PROCESS_ALIVE // (alive)
-    //     pusha 0x0 // (alive) (0x0)
-    //     storearac &process_status_table // process_status_table[0x0] = alive | (alive)
-    //     drop
-// 
-    // setup_second_process:
-    //     pusha &test_process_2 // (iret)
-    //     pusha 0x1 // (iret) (0x1)
-    //     storearac &process_iret_table // process_iret_table[0x1] = iret | (iret)
-    //     drop
-// 
-    //     pusha $PROCESS_DEAD // (alive)
-    //     pusha 0x1 // (alive) (0x1)
-    //     storearac &process_status_table // process_status_table[0x1] = alive | (alive)
-    //     drop
-// 
-    // setup_third_process:
-    //     pusha &test_process_3 // (iret)
-    //     pusha 0x2 // (iret) (0x2)
-    //     storearac &process_iret_table // process_iret_table[0x2] = iret | (iret)
-    //     drop
-// 
-    //     pusha $PROCESS_ALIVE // (alive)
-    //     pusha 0x2 // (alive) (0x2)
-    //     storearac &process_status_table // process_status_table[0x2] = alive | (alive)
-    //     drop
-
-    setda 0x1 // set disk as active device
-    pusha 0x0 // (adress)
-
-    read_loop:
-        fetchdt // (adress) (value)
-        swap // (value) (adress) 
-        addac &_m_22 // (value) (adress + &_m_21) 
-        storeb // *(adress + &_m_21) = (value) // (value) (adress + &_m_21) 
-        subac &_m_22 // (value) (adress) 
-        swap // (adress) (value)
-        drop // (adress)
-        addac 0x1 // (adress + 1)
-
-        dupt
-
-        pusha 0x400 // (adress + 1) (adress + 1) (1024(10))
-        jeqac &read_loop_break
-
-        jmpa &read_loop
     
-    read_loop_break:
+    setup_first_process:
+        pusha &test_process_1 // (iret)
+        pusha 0x0 // (iret) (0x0)
+        storearac &process_iret_table // process_iret_table[0x0] = iret | (iret)
+        drop
+        pusha $PROCESS_ALIVE // (alive)
+        pusha 0x0 // (alive) (0x0)
+        storearac &process_status_table // process_status_table[0x0] = alive | (alive)
+        drop
+    
+    setup_second_process:
+        pusha &test_process_2 // (iret)
+        pusha 0x1 // (iret) (0x1)
+        storearac &process_iret_table // process_iret_table[0x1] = iret | (iret)
+        drop
+        pusha $PROCESS_DEAD // (alive)
+        pusha 0x1 // (alive) (0x1)
+        storearac &process_status_table // process_status_table[0x1] = alive | (alive)
+        drop
+    
+    setup_third_process:
+        pusha &test_process_3 // (iret)
+        pusha 0x2 // (iret) (0x2)
+        storearac &process_iret_table // process_iret_table[0x2] = iret | (iret)
+        drop
+        pusha $PROCESS_ALIVE // (alive)
+        pusha 0x2 // (alive) (0x2)
+        storearac &process_status_table // process_status_table[0x2] = alive | (alive)
         drop
 
-    halt
+    // setda 0x1 // set disk as active device
+    // pusha 0x0 // (adress)
+// 
+    // read_loop:
+    //     fetchdt // (adress) (value)
+    //     swap // (value) (adress) 
+    //     addac &_m_22 // (value) (adress + &_m_21) 
+    //     storeb // *(adress + &_m_21) = (value) // (value) (adress + &_m_21) 
+    //     subac &_m_22 // (value) (adress) 
+    //     swap // (adress) (value)
+    //     drop // (adress)
+    //     addac 0x1 // (adress + 1)
+// 
+    //     dupt
+// 
+    //     pusha 0x400 // (adress + 1) (adress + 1) (1024(10))
+    //     jeqac &read_loop_break
+// 
+    //     jmpa &read_loop
+    // 
+    // read_loop_break:
+    //     drop
+// 
+    // halt
 
     // start process scheduler
     jmpa &rac0oc_schedule_routine_select_next_process
@@ -88,22 +84,6 @@ _m_0 db "===== KERNEL CODE ====="
 @constval PROCESS_DEAD 0x0 
 @constval PROCESS_ALIVE 0x1
 @constval PROCESS_BLOCKED 0x2
-
-rac0oc_kernel_malloc:
-rac0oc_kernel_free:
-
-// Arguments: file index
-rac0oc_file_size:
-    // get file size from table
-
-// This procedure finds first available slot in process table and return it
-rac0oc_create_process_index
-
-    // Arguments: file index
-rac0oc_start_process:
-    // firstly load file into a memory
-    // fill process table
-    // pass operation to sceduler
 
 _m_3 db "==== PROCESS SCHEDULING ===="
     active_process_index dw 0x0

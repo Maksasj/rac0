@@ -707,13 +707,13 @@ void rac0_cpu_inst_cycle(rac0_cpu_t* cpu, rac0_memory_t* memory, rac0_device_sel
 
     cont:
 
-    PLUM_LOG(PLUM_TRACE, "%llu. STACK  [ stack size: %llu ] [ top: 0x%.16llx ] [next: 0x%.16llx ]", cpu->cycle, cpu->stack.top, rac0_stack_get_top(&cpu->stack), rac0_stack_get_next(&cpu->stack));
-    PLUM_LOG(PLUM_TRACE, "%llu. IRET   [ stack size: %llu ] [ top: 0x%.16llx ] [next: 0x%.16llx ]", cpu->cycle, cpu->iret.top, rac0_stack_get_top(&cpu->iret), rac0_stack_get_next(&cpu->iret));
-    PLUM_LOG(PLUM_TRACE, "%llu. INST   [ 0x%.4x ] 0x%.16llx %s", cpu->cycle, opcode, inst.value, RAC0_OPCODE_STRING[opcode]);
-    PLUM_LOG(PLUM_TRACE, "%llu. CPU    [ pc: 0x%.16llx ] [ idt: %llu ] [ idts: %llu ] [ status: %llu ] [ timer: %d ]", cpu->cycle, cpu->pc, cpu->idt, cpu->idts, cpu->status, cpu->timer);
-    PLUM_LOG(PLUM_TRACE, "%llu. MEMORY [ ptba: 0x%.16llx ] [ pts: %llu ] [ ptps: %llu ]", cpu->cycle, memory->ptba, memory->pts, memory->ptps);
-    PLUM_LOG(PLUM_TRACE, "%llu. DEVICE [ device: %llu ] [ devc: %llu ]", cpu->cycle, device_selector->device, device_selector->devc);
-    printf("\n");
+    // PLUM_LOG(PLUM_TRACE, "%llu. STACK  [ stack size: %llu ] [ top: 0x%.16llx ] [next: 0x%.16llx ]", cpu->cycle, cpu->stack.top, rac0_stack_get_top(&cpu->stack), rac0_stack_get_next(&cpu->stack));
+    // PLUM_LOG(PLUM_TRACE, "%llu. IRET   [ stack size: %llu ] [ top: 0x%.16llx ] [next: 0x%.16llx ]", cpu->cycle, cpu->iret.top, rac0_stack_get_top(&cpu->iret), rac0_stack_get_next(&cpu->iret));
+    // PLUM_LOG(PLUM_TRACE, "%llu. INST   [ 0x%.4x ] 0x%.16llx %s", cpu->cycle, opcode, inst.value, RAC0_OPCODE_STRING[opcode]);
+    // PLUM_LOG(PLUM_TRACE, "%llu. CPU    [ pc: 0x%.16llx ] [ idt: %llu ] [ idts: %llu ] [ status: %llu ] [ timer: %d ]", cpu->cycle, cpu->pc, cpu->idt, cpu->idts, cpu->status, cpu->timer);
+    // PLUM_LOG(PLUM_TRACE, "%llu. MEMORY [ ptba: 0x%.16llx ] [ pts: %llu ] [ ptps: %llu ]", cpu->cycle, memory->ptba, memory->pts, memory->ptps);
+    // PLUM_LOG(PLUM_TRACE, "%llu. DEVICE [ device: %llu ] [ devc: %llu ]", cpu->cycle, device_selector->device, device_selector->devc);
+    // printf("\n");
 
     ++cpu->cycle;
 }
