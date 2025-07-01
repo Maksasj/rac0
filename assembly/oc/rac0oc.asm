@@ -270,7 +270,7 @@ rac0oc_user_space:
             jmpa &test_process_1_loop
             halt
 
-    _m_13 db "!test_process_1!"
+    _m_13 db "!test_process_2!"
     test_process_2:
         test_process_2_loop:
             // print 2
@@ -281,7 +281,7 @@ rac0oc_user_space:
             jmpa &test_process_2_loop
             halt
 
-    _m_14 db "!test_process_1!"
+    _m_14 db "!test_process_3!"
     test_process_3:
         test_process_3_loop:
             // print 3
